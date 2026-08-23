@@ -2,6 +2,7 @@ using System.Text;
 using Homecenter.Microservice.Api.LabelPrinting.Abstractions.Repositories;
 using Homecenter.Microservice.Api.LabelPrinting.Abstractions.Services;
 using Homecenter.Microservice.Api.LabelPrinting.Abstractions.UseCases;
+using Homecenter.Microservice.Api.LabelPrinting.Configuration;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Configuration;
 using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Context;
 using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Repositories;
@@ -33,7 +34,15 @@ builder.Services.Configure<SwaggerOptions>(builder.Configuration.GetSection(Swag
 var corsOptions = builder.Configuration.GetSection(CorsOptions.SectionName).Get<CorsOptions>() ?? new CorsOptions();
 var swaggerOptions = builder.Configuration.GetSection(SwaggerOptions.SectionName).Get<SwaggerOptions>() ?? new SwaggerOptions();
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
+var encryptionOptions = builder.Configuration.GetSection(EncryptionOptions.SectionName).Get<EncryptionOptions>() ?? new EncryptionOptions();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+
+// ---------------------------------------------------------------------------
+// Verificacion de secretos ANTES de construir nada.
+// Un despliegue con el marcador de posicion puesto arrancaria sin sintomas y
+// firmaria tokens con una clave publica: preferimos que falle aqui, ruidosamente.
+// ---------------------------------------------------------------------------
+SecretsValidator.Validate(jwtOptions, encryptionOptions, connectionString);
 
 // ---------------------------------------------------------------------------
 // Persistencia

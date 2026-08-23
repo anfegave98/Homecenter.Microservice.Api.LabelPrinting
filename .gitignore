@@ -9,8 +9,12 @@ obj/
 output/
 
 # Entorno y secretos
+# La plantilla .env.render.example SI se versiona: solo lleva marcadores.
 .env
+.env.*
+!.env.render.example
 appsettings.Local.json
+appsettings.Production.json
 *.local.json
 
 # IDE

@@ -18,7 +18,10 @@ public sealed class JwtOptions
     /// <summary>Audiencia autorizada del token.</summary>
     public string Audience { get; set; } = string.Empty;
 
-    /// <summary>Clave de firma simetrica.</summary>
+    /// <summary>
+    /// Clave de firma simetrica. Se consume como bytes UTF-8 y debe tener al menos
+    /// 32 bytes, que es lo que exige HMAC-SHA256. El arranque falla si no los cumple.
+    /// </summary>
     public string SecretKey { get; set; } = string.Empty;
 
     /// <summary>Vigencia del token en minutos.</summary>
@@ -39,10 +42,16 @@ public sealed class EncryptionOptions
     /// <summary>Algoritmo de cifrado aplicado.</summary>
     public string Algorithm { get; set; } = "AES";
 
-    /// <summary>Llave de cifrado. Se inyecta por variable de entorno.</summary>
+    /// <summary>
+    /// Llave de cifrado en Base64. Debe decodificar a exactamente 32 bytes (AES-256).
+    /// Se inyecta por variable de entorno y se valida al arrancar.
+    /// </summary>
     public string Key { get; set; } = string.Empty;
 
-    /// <summary>Vector de inicializacion del cifrado.</summary>
+    /// <summary>
+    /// Vector de inicializacion en Base64. Debe decodificar a exactamente 16 bytes,
+    /// que es el tamano de bloque de AES.
+    /// </summary>
     public string IV { get; set; } = string.Empty;
 }
 
