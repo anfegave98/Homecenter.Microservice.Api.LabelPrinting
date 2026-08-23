@@ -6,7 +6,9 @@ using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Configurati
 using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Context;
 using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Repositories;
 using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Seed;
+using Homecenter.Microservice.Api.LabelPrinting.Logic.Rules;
 using Homecenter.Microservice.Api.LabelPrinting.Logic.Security;
+using Homecenter.Microservice.Api.LabelPrinting.Logic.Services;
 using Homecenter.Microservice.Api.LabelPrinting.Logic.UseCases;
 using Homecenter.Microservice.Api.LabelPrinting.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -41,11 +43,31 @@ builder.Services.AddDbContext<LabelPrintingDbContext>(options => options.UseNpgs
 // ---------------------------------------------------------------------------
 // Inyeccion de dependencias por capa
 // ---------------------------------------------------------------------------
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IZoneRepository, ZoneRepository>();
+builder.Services.AddScoped<ILabelRepository, LabelRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IPrintRequestRepository, PrintRequestRepository>();
+
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<ICurrentUserAccessor, CurrentUserAccessor>();
+builder.Services.AddScoped<IPrintSimulator, PrintSimulator>();
+
+// Las reglas se registran individualmente y el motor las ordena por su propiedad Order.
+// Agregar una regla nueva es registrar una clase mas: no hay que tocar el motor
+// ni el caso de uso.
+builder.Services.AddSingleton<IPrintRule, RequiredDataRule>();
+builder.Services.AddSingleton<IPrintRule, LabelExistsRule>();
+builder.Services.AddSingleton<IPrintRule, DocumentStatusRule>();
+builder.Services.AddSingleton<IPrintRule, ZoneAvailabilityRule>();
+builder.Services.AddSingleton(provider => new PrintRuleEngine(provider.GetServices<IPrintRule>()));
+
 builder.Services.AddScoped<IAuthenticateUserUseCase, AuthenticateUserUseCase>();
+builder.Services.AddScoped<IResolveLabelUseCase, ResolveLabelUseCase>();
+builder.Services.AddScoped<IProcessPrintRequestUseCase, ProcessPrintRequestUseCase>();
 
 // ---------------------------------------------------------------------------
 // Autenticacion y autorizacion por roles
