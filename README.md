@@ -171,6 +171,66 @@ eso las 68 pruebas corren sin base de datos en menos de 300 ms.
 
 ---
 
+## Por qué no se partió de las plantillas base
+
+La prueba entrega dos plantillas —`PLANTILLA_BASE_ANGULAR_FRONT_APPS_2025` y
+`PYTHON_BACKEND_TEMPLATE`— cuyo uso no es obligatorio. Se construyó desde cero, y esta
+es la razón de cada caso.
+
+### La plantilla Angular no puede ejecutarse de forma autónoma
+
+Es un **micro-frontend del Hub de Proveedores**: su propia documentación lo dice sin
+ambigüedad — *"No tiene login propio: recibe la sesión de la app contenedora"* por
+`postMessage`, y consume las APIs con ese token.
+
+Ese supuesto es incompatible con la prueba en dos puntos concretos:
+
+- **HU-01 exige identificar al usuario solicitante**, y la sección 9 pide el campo
+  Usuario en pantalla. Sin aplicación contenedora no hay sesión que heredar, así que el
+  login propio no es un extra: es un requisito.
+- **El evaluador no tiene el Hub.** Una aplicación que espera un `postMessage` que nunca
+  llega no se puede abrir y probar, que es justamente lo que la entrega necesita.
+
+A eso se suma que su despliegue apunta a Azure Blob Storage u OpenShift con una
+`subscriptionKey` de Azure API Management, y esta entrega se publica en Cloudflare Pages
+y Render. Adaptarla habría significado desmontar sus supuestos centrales.
+
+### La plantilla de backend es Python; la solución es .NET 8
+
+El enunciado no fija lenguaje —§4 dice expresamente que *"el candidato puede proponer su
+propia arquitectura"*— y el rol es sobre el ecosistema .NET.
+
+### Pero sus convenciones sí se adoptaron
+
+No usar el código no significa ignorar el criterio de casa. La estructura por capas de
+esta solución replica la de la plantilla Python casi uno a uno:
+
+| `PYTHON_BACKEND_TEMPLATE` | Esta solución |
+|---|---|
+| `api/controllers/` | `...LabelPrinting/Controllers/` |
+| `application/services/` | `...Logic/UseCases/` |
+| `domain/repositories/` | `...Abstractions/Repositories/` |
+| `infrastructure/database/` | `...EntityFramework/` |
+| `api/response/api_response.py` | `Common/ApiResponse.cs` |
+| `api/response/metadata.py` | `meta` del envelope |
+| Variables de entorno por defecto, `.env` en local | `appsettings` + variables de entorno |
+
+**El punto más revelador está en su `api_response.py`**, que distingue tres desenlaces:
+
+```python
+create_successful(...)    # is_successful=True,  is_error=False
+create_unsuccessful(...)  # is_successful=False, is_error=False   ← rechazo, no error
+create_error(...)         # is_successful=False, is_error=True
+```
+
+La plantilla de casa **ya separa "no fue exitoso" de "hubo un error"**. Es exactamente la
+distinción del supuesto **H6** de esta solución: un rechazo de negocio responde HTTP 200
+con `success: false`, mientras que los fallos técnicos usan códigos HTTP. La decisión se
+tomó por el razonamiento explicado en [ARCHITECTURE.md](docs/ARCHITECTURE.md) y resultó
+coincidir con la convención del equipo.
+
+---
+
 ## Documentación
 
 | Documento | Contenido |
