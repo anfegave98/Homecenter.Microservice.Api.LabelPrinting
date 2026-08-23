@@ -1,0 +1,23 @@
+# Todo lo que no necesita entrar al contexto de build. Reduce el tamano enviado al
+# demonio de Docker y evita que artefactos locales contaminen la imagen.
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+.git/
+.gitignore
+
+# Salida de impresion simulada generada en local.
+output/
+
+# Secretos y configuracion local: no deben viajar nunca a la imagen.
+.env
+.env.*
+!.env.render.example
+**/appsettings.Local.json
+**/appsettings.Production.json
+
+# Pruebas y documentacion no participan de la imagen publicada.
+tests/
+docs/
+README.md

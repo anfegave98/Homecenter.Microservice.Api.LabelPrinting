@@ -1,0 +1,89 @@
+# Infraestructura del submodulo en Render, declarada como codigo.
+#
+# El objetivo es que el despliegue sea reproducible: quien clone el repositorio obtiene
+# la misma topologia sin reconstruirla a mano en el panel. Los valores sensibles NO
+# viven aqui; se declaran con sync: false, que en Render significa "el valor se captura
+# en el panel y no se versiona".
+#
+# Ver docs/SECRETS.md para el inventario completo de secretos.
+
+databases:
+  - name: homecenter-labelprinting-db
+    databaseName: labelprinting
+    user: labelprinting
+    plan: free
+    # El plan gratuito de Render caduca a los 30 dias. Documentado en el README:
+    # es una limitacion del alojamiento, no del diseno de la solucion.
+
+services:
+  - type: web
+    name: homecenter-labelprinting-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+
+    # Render reinicia la instancia sin intervencion manual, asi que la migracion y la
+    # carga de datos semilla ocurren al arrancar la aplicacion. No hay paso de release
+    # separado que pueda quedar sin ejecutarse.
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+
+      # Debe coincidir con ASPNETCORE_HTTP_PORTS del Dockerfile.
+      - key: PORT
+        value: 8080
+
+      # Render inyecta la cadena de conexion de la base gestionada. No se escribe a mano.
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: homecenter-labelprinting-db
+          property: connectionString
+
+      # Secretos: se capturan en el panel. El servicio no arranca si conservan el
+      # marcador de posicion (SecretsValidator).
+      - key: Jwt__SecretKey
+        sync: false
+
+      - key: Jwt__Issuer
+        value: Homecenter.LabelPrinting
+      - key: Jwt__Audience
+        value: homecenter-labelprinting-site
+      - key: Jwt__ExpirationMinutes
+        value: 60
+
+      # Cifrado del payload sensible. Encryption__IV no se define: el servicio genera un
+      # vector de inicializacion aleatorio por operacion. Ver docs/ARCHITECTURE.md.
+      - key: Encryption__Enabled
+        value: false
+      - key: Encryption__Algorithm
+        value: AES
+      - key: Encryption__Key
+        sync: false
+
+      # Origen del frontend en Cloudflare Pages. Sin esto el navegador bloquea toda
+      # llamada al API: es requisito de funcionamiento, no un ajuste opcional.
+      - key: Cors__AllowedOrigins__0
+        value: https://homecenter-labelprinting-site.pages.dev
+      - key: Cors__AllowedOrigins__1
+        value: http://localhost:4200
+
+      # Se deja encendido en la entrega para que el evaluador pueda probar la API.
+      # Decision consciente y documentada, no un descuido de hardening.
+      - key: Swagger__Enabled
+        value: true
+
+      - key: Seed__Enabled
+        value: true
+
+      # En el contenedor el sistema de archivos es efimero: el archivo ZPL se perderia
+      # en cada reinicio y no aporta evidencia. El evento de impresion y la auditoria
+      # en base de datos si persisten, que es lo que el enunciado exige.
+      - key: Printing__PersistZplFile
+        value: false
+
+      - key: RateLimiting__Enabled
+        value: true
