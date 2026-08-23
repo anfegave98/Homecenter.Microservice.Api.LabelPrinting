@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Homecenter.Microservice.Api.LabelPrinting.Abstractions/Homecenter.Microservice.Api.LabelPrinting.Abstractions.csproj" />
+    <Project Path="src/Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object/Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.csproj" />
+    <Project Path="src/Homecenter.Microservice.Api.LabelPrinting.Entities/Homecenter.Microservice.Api.LabelPrinting.Entities.csproj" />
+    <Project Path="src/Homecenter.Microservice.Api.LabelPrinting.EntityFramework/Homecenter.Microservice.Api.LabelPrinting.EntityFramework.csproj" />
+    <Project Path="src/Homecenter.Microservice.Api.LabelPrinting.Logic/Homecenter.Microservice.Api.LabelPrinting.Logic.csproj" />
+    <Project Path="src/Homecenter.Microservice.Api.LabelPrinting/Homecenter.Microservice.Api.LabelPrinting.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Homecenter.Microservice.Api.LabelPrinting.Logic.Tests/Homecenter.Microservice.Api.LabelPrinting.Logic.Tests.csproj" />
+  </Folder>
+</Solution>

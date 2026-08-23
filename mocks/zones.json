@@ -1,0 +1,14 @@
+[
+  {
+    "code": "ZONA-PICKING-A",
+    "name": "Zona Picking A"
+  },
+  {
+    "code": "ZONA-PICKING-B",
+    "name": "Zona Picking B"
+  },
+  {
+    "code": "ZONA-DESPACHO",
+    "name": "Zona Despacho"
+  }
+]

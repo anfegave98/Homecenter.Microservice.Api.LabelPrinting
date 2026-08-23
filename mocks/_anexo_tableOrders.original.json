@@ -1,0 +1,35 @@
+{
+  "requestId": "REQ-20260605-001",
+  "requestDateTime": "2026-06-05T10:15:00-05:00",
+  "requestedBy": "usuario.operacion",
+  "zone": "ZONA-PICKING-A",
+  "document": {
+    "documentType": "NOTA_PEDIDO",
+    "documentNumber": "NP-458721",
+    "status": "LIBERADA"
+  },
+  "labels": [
+    {
+      "etqId": "ETQ-10001",
+      "lpnId": "LPN-000987654",
+      "isPreGenerated": true,
+      "templateCode": "TPL-ETQ-STD-4X6"
+	  "zpl": "FORMATO ZPL"
+    }
+  ],
+  "products": [
+    {
+      "productCode": "PROD-001",
+      "productDescription": "Martillo 16oz",
+      "requestedQty": 2,
+      "uom": "UND"
+    },
+    {
+      "productCode": "PROD-002",
+      "productDescription": "Guantes de seguridad",
+      "requestedQty": 1,
+      "uom": "PAR"
+    }
+  ],
+  "reprintReason": null
+}

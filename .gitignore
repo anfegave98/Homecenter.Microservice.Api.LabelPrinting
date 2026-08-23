@@ -1,0 +1,23 @@
+# .NET
+bin/
+obj/
+*.user
+[Dd]ebug/
+[Rr]elease/
+
+# Salida de impresion simulada
+output/
+
+# Entorno y secretos
+.env
+appsettings.Local.json
+*.local.json
+
+# IDE
+.vs/
+.idea/
+*.swp
+
+# SO
+Thumbs.db
+.DS_Store

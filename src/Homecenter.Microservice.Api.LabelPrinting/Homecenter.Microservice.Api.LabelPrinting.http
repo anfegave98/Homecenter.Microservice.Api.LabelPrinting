@@ -1,0 +1,6 @@
+@Homecenter.Microservice.Api.LabelPrinting_HostAddress = http://localhost:5113
+
+GET {{Homecenter.Microservice.Api.LabelPrinting_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,56 @@
+[
+  {
+    "productCode": "PROD-001",
+    "zoneCode": "ZONA-PICKING-A",
+    "availableQty": 10,
+    "isStocked": true
+  },
+  {
+    "productCode": "PROD-001",
+    "zoneCode": "ZONA-PICKING-B",
+    "availableQty": 0,
+    "isStocked": false
+  },
+  {
+    "productCode": "PROD-001",
+    "zoneCode": "ZONA-DESPACHO",
+    "availableQty": 5,
+    "isStocked": true
+  },
+  {
+    "productCode": "PROD-002",
+    "zoneCode": "ZONA-PICKING-A",
+    "availableQty": 4,
+    "isStocked": true
+  },
+  {
+    "productCode": "PROD-002",
+    "zoneCode": "ZONA-PICKING-B",
+    "availableQty": 2,
+    "isStocked": true
+  },
+  {
+    "productCode": "PROD-003",
+    "zoneCode": "ZONA-PICKING-B",
+    "availableQty": 7,
+    "isStocked": true
+  },
+  {
+    "productCode": "PROD-004",
+    "zoneCode": "ZONA-PICKING-B",
+    "availableQty": 1,
+    "isStocked": true
+  },
+  {
+    "productCode": "PROD-005",
+    "zoneCode": "ZONA-DESPACHO",
+    "availableQty": 50,
+    "isStocked": false
+  },
+  {
+    "productCode": "PROD-006",
+    "zoneCode": "ZONA-PICKING-A",
+    "availableQty": 4,
+    "isStocked": true
+  }
+]

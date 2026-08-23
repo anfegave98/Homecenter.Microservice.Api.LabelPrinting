@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Homecenter.Microservice.Api.LabelPrinting.Logic\Homecenter.Microservice.Api.LabelPrinting.Logic.csproj" />
+    <ProjectReference Include="..\Homecenter.Microservice.Api.LabelPrinting.Abstractions\Homecenter.Microservice.Api.LabelPrinting.Abstractions.csproj" />
+    <ProjectReference Include="..\Homecenter.Microservice.Api.LabelPrinting.EntityFramework\Homecenter.Microservice.Api.LabelPrinting.EntityFramework.csproj" />
+    <ProjectReference Include="..\Homecenter.Microservice.Api.LabelPrinting.Entities\Homecenter.Microservice.Api.LabelPrinting.Entities.csproj" />
+    <ProjectReference Include="..\Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object\Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

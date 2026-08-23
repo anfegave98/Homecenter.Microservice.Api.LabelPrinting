@@ -1,0 +1,26 @@
+[
+  {
+    "productCode": "PROD-001",
+    "productDescription": "Martillo 16oz"
+  },
+  {
+    "productCode": "PROD-002",
+    "productDescription": "Guantes de seguridad"
+  },
+  {
+    "productCode": "PROD-003",
+    "productDescription": "Taladro percutor 1/2\""
+  },
+  {
+    "productCode": "PROD-004",
+    "productDescription": "Cemento gris 50kg"
+  },
+  {
+    "productCode": "PROD-005",
+    "productDescription": "Pintura vinilo blanco 1gl"
+  },
+  {
+    "productCode": "PROD-006",
+    "productDescription": "Tornillo autoperforante x100"
+  }
+]
