@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Homecenter.Microservice.Api.LabelPrinting.Logic\Homecenter.Microservice.Api.LabelPrinting.Logic.csproj" />
     <ProjectReference Include="..\..\src\Homecenter.Microservice.Api.LabelPrinting.Abstractions\Homecenter.Microservice.Api.LabelPrinting.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Homecenter.Microservice.Api.LabelPrinting.EntityFramework\Homecenter.Microservice.Api.LabelPrinting.EntityFramework.csproj" />
     <ProjectReference Include="..\..\src\Homecenter.Microservice.Api.LabelPrinting.Entities\Homecenter.Microservice.Api.LabelPrinting.Entities.csproj" />
     <ProjectReference Include="..\..\src\Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object\Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.csproj" />
   </ItemGroup>

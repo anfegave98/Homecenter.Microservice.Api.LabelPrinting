@@ -4,6 +4,7 @@ using Homecenter.Microservice.Api.LabelPrinting.Abstractions.Services;
 using Homecenter.Microservice.Api.LabelPrinting.Abstractions.UseCases;
 using Homecenter.Microservice.Api.LabelPrinting.Configuration;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Configuration;
+using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Configuration;
 using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Context;
 using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Repositories;
 using Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Seed;
@@ -38,7 +39,9 @@ var swaggerOptions = builder.Configuration.GetSection(SwaggerOptions.SectionName
 var rateLimitingOptions = builder.Configuration.GetSection(RateLimitingOptions.SectionName).Get<RateLimitingOptions>() ?? new RateLimitingOptions();
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 var encryptionOptions = builder.Configuration.GetSection(EncryptionOptions.SectionName).Get<EncryptionOptions>() ?? new EncryptionOptions();
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+// La plataforma entrega la conexion como URI; Npgsql necesita clave=valor.
+var connectionString = ConnectionStringNormalizer.Normalize(
+    builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty);
 
 // ---------------------------------------------------------------------------
 // Verificacion de secretos ANTES de construir nada.
