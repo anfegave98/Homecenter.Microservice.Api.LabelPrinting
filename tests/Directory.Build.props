@@ -1,0 +1,15 @@
+<Project>
+
+  <!--
+    Los proyectos de prueba heredan la configuracion de la solucion, pero no la
+    exigencia de documentacion XML: sus miembros publicos son metodos de prueba
+    cuyo nombre ya describe el escenario y no forman parte de ninguna API publica.
+  -->
+  <Import Project="../Directory.Build.props" />
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

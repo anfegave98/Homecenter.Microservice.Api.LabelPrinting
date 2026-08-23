@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Configurations;
 
+/// <summary>Configuracion de persistencia de la entidad User.</summary>
 public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.ToTable("Users");
@@ -20,8 +22,10 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
     }
 }
 
+/// <summary>Configuracion de persistencia de la entidad Role.</summary>
 public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<Role> builder)
     {
         builder.ToTable("Roles");
@@ -32,8 +36,10 @@ public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
     }
 }
 
+/// <summary>Configuracion de persistencia de la entidad UserRole.</summary>
 public sealed class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<UserRole> builder)
     {
         builder.ToTable("UserRoles");

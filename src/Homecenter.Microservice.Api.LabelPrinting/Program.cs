@@ -63,11 +63,14 @@ builder.Services.AddSingleton<IPrintRule, RequiredDataRule>();
 builder.Services.AddSingleton<IPrintRule, LabelExistsRule>();
 builder.Services.AddSingleton<IPrintRule, DocumentStatusRule>();
 builder.Services.AddSingleton<IPrintRule, ZoneAvailabilityRule>();
+builder.Services.AddSingleton<IPrintRule, ReprintPolicyRule>();
 builder.Services.AddSingleton(provider => new PrintRuleEngine(provider.GetServices<IPrintRule>()));
 
 builder.Services.AddScoped<IAuthenticateUserUseCase, AuthenticateUserUseCase>();
 builder.Services.AddScoped<IResolveLabelUseCase, ResolveLabelUseCase>();
 builder.Services.AddScoped<IProcessPrintRequestUseCase, ProcessPrintRequestUseCase>();
+builder.Services.AddScoped<IGetPrintHistoryUseCase, GetPrintHistoryUseCase>();
+builder.Services.AddScoped<IGetDashboardUseCase, GetDashboardUseCase>();
 
 // ---------------------------------------------------------------------------
 // Autenticacion y autorizacion por roles
@@ -132,6 +135,14 @@ builder.Services.AddSwaggerGen(options =>
         Description = "API de impresion de etiquetas pre-generadas (ETQ/LPN) con validacion de reglas, "
                     + "trazabilidad de impresiones y control de reimpresiones."
     });
+
+    // La documentacion XML de cada capa alimenta las descripciones de Swagger:
+    // el comentario que se escribe junto al codigo es el mismo que lee quien consume
+    // la API, y no hay una segunda fuente de verdad que pueda quedar desactualizada.
+    foreach (var xmlFile in Directory.GetFiles(AppContext.BaseDirectory, "Homecenter.Microservice.Api.LabelPrinting*.xml"))
+    {
+        options.IncludeXmlComments(xmlFile, includeControllerXmlComments: true);
+    }
 
     // Permite al evaluador probar los endpoints protegidos directamente desde Swagger.
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

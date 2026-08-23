@@ -28,6 +28,7 @@ public sealed class ProcessPrintRequestUseCase : IProcessPrintRequestUseCase
     private readonly PrintRuleEngine _ruleEngine;
     private readonly ILogger<ProcessPrintRequestUseCase> _logger;
 
+    /// <summary>Crea una instancia con sus dependencias.</summary>
     public ProcessPrintRequestUseCase(
         ILabelRepository labelRepository,
         IZoneRepository zoneRepository,
@@ -48,6 +49,7 @@ public sealed class ProcessPrintRequestUseCase : IProcessPrintRequestUseCase
         _logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task<ApiResponse<PrintResultDto>> ExecuteAsync(
         PrintRequestCreateDto request,
         CancellationToken cancellationToken = default)

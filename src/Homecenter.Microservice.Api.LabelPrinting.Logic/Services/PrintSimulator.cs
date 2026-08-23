@@ -19,12 +19,14 @@ public sealed class PrintSimulator : IPrintSimulator
     private readonly PrintingOptions _options;
     private readonly ILogger<PrintSimulator> _logger;
 
+    /// <summary>Crea una instancia con sus dependencias.</summary>
     public PrintSimulator(IOptions<PrintingOptions> options, ILogger<PrintSimulator> logger)
     {
         _options = options.Value;
         _logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task<string> PrintAsync(Label label, Guid correlationId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation(

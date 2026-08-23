@@ -27,6 +27,7 @@ public sealed class MockDataSeeder
     private readonly ILogger<MockDataSeeder> _logger;
     private readonly string _contentRootPath;
 
+    /// <summary>Crea una instancia con sus dependencias.</summary>
     public MockDataSeeder(
         LabelPrintingDbContext context,
         IPasswordHasher passwordHasher,
@@ -41,6 +42,8 @@ public sealed class MockDataSeeder
         _contentRootPath = contentRootPath;
     }
 
+    /// <summary>Carga los datos mock si el seed esta habilitado por configuracion.</summary>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         if (!_options.Enabled)

@@ -5,6 +5,9 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Entities.Enums;
 /// </summary>
 public enum PrintResult
 {
+    /// <summary>La solicitud cumplio todas las reglas y la etiqueta se imprimio.</summary>
     Approved = 1,
+
+    /// <summary>La solicitud incumplio alguna regla y no se imprimio.</summary>
     Rejected = 2
 }

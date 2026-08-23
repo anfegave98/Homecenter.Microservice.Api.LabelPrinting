@@ -1,0 +1,16 @@
+<Project>
+
+  <!--
+    Documentacion XML obligatoria en todos los proyectos.
+
+    GenerateDocumentationFile activa el warning CS1591 sobre cualquier miembro publico
+    sin documentar, y TreatWarningsAsErrors lo convierte en error de compilacion: la
+    documentacion deja de ser una intencion y pasa a ser una condicion para compilar.
+    El archivo XML resultante es el que alimenta las descripciones de Swagger.
+  -->
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

@@ -12,6 +12,8 @@ public sealed class CurrentUserAccessor : ICurrentUserAccessor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
+    /// <summary>Crea el accesor sobre el contexto HTTP actual.</summary>
+    /// <param name="httpContextAccessor">Accesor al contexto de la peticion.</param>
     public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
@@ -19,13 +21,17 @@ public sealed class CurrentUserAccessor : ICurrentUserAccessor
 
     private ClaimsPrincipal? Principal => _httpContextAccessor.HttpContext?.User;
 
+    /// <inheritdoc />
     public int? UserId =>
         int.TryParse(Principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
 
+    /// <inheritdoc />
     public string? UserName => Principal?.FindFirstValue(ClaimTypes.Name);
 
+    /// <inheritdoc />
     public IReadOnlyCollection<string> Roles =>
         Principal?.FindAll(ClaimTypes.Role).Select(x => x.Value).ToArray() ?? Array.Empty<string>();
 
+    /// <inheritdoc />
     public bool IsInRole(string role) => Principal?.IsInRole(role) ?? false;
 }

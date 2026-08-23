@@ -18,6 +18,7 @@ public sealed class PasswordHasher : IPasswordHasher
 
     private static readonly HashAlgorithmName Algorithm = HashAlgorithmName.SHA256;
 
+    /// <inheritdoc />
     public (string Hash, string Salt) Hash(string password)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
@@ -28,6 +29,7 @@ public sealed class PasswordHasher : IPasswordHasher
         return (Convert.ToBase64String(key), Convert.ToBase64String(salt));
     }
 
+    /// <inheritdoc />
     public bool Verify(string password, string hash, string salt)
     {
         if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(hash) || string.IsNullOrWhiteSpace(salt))

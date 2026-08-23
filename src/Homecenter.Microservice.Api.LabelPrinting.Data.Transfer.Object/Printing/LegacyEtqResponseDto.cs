@@ -11,17 +11,27 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Printin
 /// </summary>
 public sealed class LegacyEtqResponseDto
 {
+    /// <summary>Identificador de la etiqueta.</summary>
     public required string IdEtiqueta { get; init; }
 
+    /// <summary>Documento origen, expuesto con el nombre que usa el contrato legacy.</summary>
     public required string PurchaseOrder { get; init; }
 
+    /// <summary>Identificador transaccional de la solicitud origen.</summary>
     public required string TcOrderId { get; init; }
 
+    /// <summary>Codigo del primer producto de la ETQ.</summary>
     public required string Sku { get; init; }
 
+    /// <summary>Cantidad solicitada del primer producto.</summary>
     public required decimal Unidades { get; init; }
 
+    /// <summary>Contenido ZPL de la etiqueta.</summary>
     public required string Zpl { get; init; }
 
+    /// <summary>
+    /// True cuando la ETQ arrastra mas de un producto y este bloque solo alcanza
+    /// a representar el primero.
+    /// </summary>
     public required bool HasMultipleProducts { get; init; }
 }

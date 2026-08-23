@@ -1,51 +1,99 @@
 namespace Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Configuration;
 
 /// <summary>
-/// Opciones tipadas de la aplicacion. Todo valor que cambie entre ambientes vive aqui,
-/// nunca quemado en codigo. Los valores sensibles se inyectan por variable de entorno.
+/// Parametros de emision y validacion del token de acceso.
+///
+/// Es una de las opciones tipadas de la aplicacion: todo valor que cambie entre
+/// ambientes vive en configuracion, nunca quemado en codigo. La clave de firma se
+/// inyecta por variable de entorno y no se versiona.
 /// </summary>
 public sealed class JwtOptions
 {
+    /// <summary>Nombre de la seccion en appsettings.json.</summary>
     public const string SectionName = "Jwt";
 
+    /// <summary>Emisor del token.</summary>
     public string Issuer { get; set; } = string.Empty;
+
+    /// <summary>Audiencia autorizada del token.</summary>
     public string Audience { get; set; } = string.Empty;
+
+    /// <summary>Clave de firma simetrica.</summary>
     public string SecretKey { get; set; } = string.Empty;
+
+    /// <summary>Vigencia del token en minutos.</summary>
     public int ExpirationMinutes { get; set; } = 60;
 }
 
+/// <summary>
+/// Parametros de cifrado de datos sensibles. Se habilita por ambiente.
+/// </summary>
 public sealed class EncryptionOptions
 {
+    /// <summary>Nombre de la seccion en appsettings.json.</summary>
     public const string SectionName = "Encryption";
 
+    /// <summary>Habilita el cifrado de datos sensibles.</summary>
     public bool Enabled { get; set; }
+
+    /// <summary>Algoritmo de cifrado aplicado.</summary>
     public string Algorithm { get; set; } = "AES";
+
+    /// <summary>Llave de cifrado. Se inyecta por variable de entorno.</summary>
     public string Key { get; set; } = string.Empty;
+
+    /// <summary>Vector de inicializacion del cifrado.</summary>
     public string IV { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Limites de solicitudes. Se ajustan sin recompilar para poder reaccionar
+/// ante un pico de trafico en produccion.
+/// </summary>
 public sealed class RateLimitingOptions
 {
+    /// <summary>Nombre de la seccion en appsettings.json.</summary>
     public const string SectionName = "RateLimiting";
 
+    /// <summary>Habilita la limitacion de solicitudes.</summary>
     public bool Enabled { get; set; } = true;
+
+    /// <summary>Solicitudes permitidas dentro de la ventana, por defecto.</summary>
     public int PermitLimit { get; set; } = 100;
+
+    /// <summary>Duracion de la ventana de conteo, en segundos.</summary>
     public int WindowSeconds { get; set; } = 60;
+
+    /// <summary>Solicitudes que pueden encolarse al superar el limite.</summary>
     public int QueueLimit { get; set; }
+
+    /// <summary>Aplica el limite por usuario autenticado.</summary>
     public bool ApplyByAuthenticatedUser { get; set; } = true;
+
+    /// <summary>Aplica el limite por IP en endpoints publicos.</summary>
     public bool ApplyByIpForAnonymous { get; set; } = true;
+
+    /// <summary>Codigo HTTP devuelto al exceder el limite.</summary>
     public int RejectedStatusCode { get; set; } = 429;
+
+    /// <summary>Politicas especificas por grupo de endpoints.</summary>
     public Dictionary<string, RateLimitPolicyOptions> Policies { get; set; } = new();
 }
 
+/// <summary>Limite aplicable a un grupo de endpoints.</summary>
 public sealed class RateLimitPolicyOptions
 {
+    /// <summary>Solicitudes permitidas dentro de la ventana.</summary>
     public int PermitLimit { get; set; }
+
+    /// <summary>Duracion de la ventana de conteo, en segundos.</summary>
     public int WindowSeconds { get; set; }
 }
 
+/// <summary>Origenes autorizados para consumir la API desde un navegador.</summary>
 public sealed class CorsOptions
 {
+    /// <summary>Nombre de la seccion en appsettings.json.</summary>
     public const string SectionName = "Cors";
 
     /// <summary>
@@ -55,26 +103,41 @@ public sealed class CorsOptions
     public string[] AllowedOrigins { get; set; } = Array.Empty<string>();
 }
 
+/// <summary>Comportamiento de la simulacion de impresion.</summary>
 public sealed class PrintingOptions
 {
+    /// <summary>Nombre de la seccion en appsettings.json.</summary>
     public const string SectionName = "Printing";
 
+    /// <summary>Modo de simulacion aplicado.</summary>
     public string SimulationMode { get; set; } = "LogicalEvent";
+
+    /// <summary>Carpeta donde se deja el archivo ZPL de evidencia.</summary>
     public string OutputDirectory { get; set; } = "./output/zpl";
+
+    /// <summary>Indica si se escribe el archivo ZPL de salida.</summary>
     public bool PersistZplFile { get; set; } = true;
 }
 
+/// <summary>Carga de datos semilla al arranque.</summary>
 public sealed class SeedOptions
 {
+    /// <summary>Nombre de la seccion en appsettings.json.</summary>
     public const string SectionName = "Seed";
 
+    /// <summary>Habilita la carga de datos mock.</summary>
     public bool Enabled { get; set; } = true;
+
+    /// <summary>Ruta de la carpeta con los archivos mock de semilla.</summary>
     public string MocksPath { get; set; } = "./mocks";
 }
 
+/// <summary>Exposicion de la documentacion interactiva de la API.</summary>
 public sealed class SwaggerOptions
 {
+    /// <summary>Nombre de la seccion en appsettings.json.</summary>
     public const string SectionName = "Swagger";
 
+    /// <summary>Habilita Swagger en el ambiente actual.</summary>
     public bool Enabled { get; set; } = true;
 }

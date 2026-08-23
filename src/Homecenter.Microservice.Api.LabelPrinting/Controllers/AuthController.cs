@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
 
+/// <summary>Componente AuthController del submodulo de impresion.</summary>
 [ApiController]
 [Route("api/auth")]
 [AllowAnonymous]
@@ -14,6 +15,8 @@ public sealed class AuthController : ControllerBase
 {
     private readonly IAuthenticateUserUseCase _authenticateUser;
 
+    /// <summary>Crea el controlador con su caso de uso.</summary>
+    /// <param name="authenticateUser">Caso de uso de autenticacion.</param>
     public AuthController(IAuthenticateUserUseCase authenticateUser)
     {
         _authenticateUser = authenticateUser;

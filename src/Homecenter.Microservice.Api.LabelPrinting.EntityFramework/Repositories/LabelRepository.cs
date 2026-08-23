@@ -5,15 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Repositories;
 
+/// <summary>Componente LabelRepository del submodulo de impresion.</summary>
 public sealed class LabelRepository : ILabelRepository
 {
     private readonly LabelPrintingDbContext _context;
 
+    /// <summary>Crea una instancia con sus dependencias.</summary>
     public LabelRepository(LabelPrintingDbContext context)
     {
         _context = context;
     }
 
+    /// <inheritdoc />
     public Task<Label?> GetByLpnOrEtqAsync(string key, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(key))

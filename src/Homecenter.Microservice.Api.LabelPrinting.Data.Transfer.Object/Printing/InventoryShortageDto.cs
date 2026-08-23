@@ -7,15 +7,21 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Printin
 /// </summary>
 public sealed class InventoryShortageDto
 {
+    /// <summary>Codigo del articulo que incumple.</summary>
     public required string ProductCode { get; init; }
 
+    /// <summary>Descripcion del articulo que incumple.</summary>
     public required string ProductDescription { get; init; }
 
+    /// <summary>Cantidad exigida por el documento.</summary>
     public required decimal RequestedQty { get; init; }
 
+    /// <summary>Cantidad realmente disponible en la zona.</summary>
     public required decimal AvailableQty { get; init; }
 
+    /// <summary>Indicador de abastecimiento en la zona.</summary>
     public required bool IsStocked { get; init; }
 
+    /// <summary>Explicacion legible de por que este producto bloquea la impresion.</summary>
     public required string Reason { get; init; }
 }

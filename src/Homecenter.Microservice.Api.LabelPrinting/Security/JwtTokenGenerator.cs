@@ -17,11 +17,14 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtOptions _options;
 
+    /// <summary>Crea el generador con la configuracion de firma.</summary>
+    /// <param name="options">Parametros de emision del token.</param>
     public JwtTokenGenerator(IOptions<JwtOptions> options)
     {
         _options = options.Value;
     }
 
+    /// <inheritdoc />
     public (string Token, int ExpiresInSeconds) Generate(User user, IReadOnlyCollection<string> roles)
     {
         var credentials = new SigningCredentials(

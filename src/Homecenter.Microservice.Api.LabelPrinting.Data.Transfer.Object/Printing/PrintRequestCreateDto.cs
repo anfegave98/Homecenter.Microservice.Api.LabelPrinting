@@ -10,6 +10,7 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Printin
 /// </summary>
 public sealed class PrintRequestCreateDto
 {
+    /// <summary>Identificador de la unidad logistica o de la etiqueta. Se acepta LPN o ETQ.</summary>
     [Required(ErrorMessage = "El LPN es obligatorio.")]
     [MaxLength(50)]
     public string Lpn { get; set; } = string.Empty;

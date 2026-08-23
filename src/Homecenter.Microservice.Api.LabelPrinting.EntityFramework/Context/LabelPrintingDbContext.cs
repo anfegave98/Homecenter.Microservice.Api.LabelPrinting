@@ -11,23 +11,36 @@ namespace Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Context;
 /// </summary>
 public class LabelPrintingDbContext : DbContext
 {
+    /// <summary>Crea una instancia con sus dependencias.</summary>
     public LabelPrintingDbContext(DbContextOptions<LabelPrintingDbContext> options)
         : base(options)
     {
     }
 
+    /// <summary>Acceso a la tabla Users.</summary>
     public DbSet<User> Users => Set<User>();
+    /// <summary>Acceso a la tabla Roles.</summary>
     public DbSet<Role> Roles => Set<Role>();
+    /// <summary>Acceso a la tabla UserRoles.</summary>
     public DbSet<UserRole> UserRoles => Set<UserRole>();
+    /// <summary>Acceso a la tabla Zones.</summary>
     public DbSet<Zone> Zones => Set<Zone>();
+    /// <summary>Acceso a la tabla Documents.</summary>
     public DbSet<Document> Documents => Set<Document>();
+    /// <summary>Acceso a la tabla Labels.</summary>
     public DbSet<Label> Labels => Set<Label>();
+    /// <summary>Acceso a la tabla Products.</summary>
     public DbSet<Product> Products => Set<Product>();
+    /// <summary>Acceso a la tabla DocumentProducts.</summary>
     public DbSet<DocumentProduct> DocumentProducts => Set<DocumentProduct>();
+    /// <summary>Acceso a la tabla InventoryAvailability.</summary>
     public DbSet<InventoryAvailability> InventoryAvailability => Set<InventoryAvailability>();
+    /// <summary>Acceso a la tabla PrintRequests.</summary>
     public DbSet<PrintRequest> PrintRequests => Set<PrintRequest>();
+    /// <summary>Acceso a la tabla PrintAuditLogs.</summary>
     public DbSet<PrintAuditLog> PrintAuditLogs => Set<PrintAuditLog>();
 
+    /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

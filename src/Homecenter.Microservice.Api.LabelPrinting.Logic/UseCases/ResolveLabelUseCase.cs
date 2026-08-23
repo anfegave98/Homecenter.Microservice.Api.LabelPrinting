@@ -27,6 +27,7 @@ public sealed class ResolveLabelUseCase : IResolveLabelUseCase
     private readonly IInventoryRepository _inventoryRepository;
     private readonly IPrintRequestRepository _printRequestRepository;
 
+    /// <summary>Crea una instancia con sus dependencias.</summary>
     public ResolveLabelUseCase(
         ILabelRepository labelRepository,
         IZoneRepository zoneRepository,
@@ -39,6 +40,7 @@ public sealed class ResolveLabelUseCase : IResolveLabelUseCase
         _printRequestRepository = printRequestRepository;
     }
 
+    /// <inheritdoc />
     public async Task<ApiResponse<LabelDetailDto>> ExecuteAsync(
         string lpn,
         string? zoneCode,

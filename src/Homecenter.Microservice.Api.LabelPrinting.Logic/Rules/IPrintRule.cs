@@ -11,5 +11,8 @@ public interface IPrintRule
     /// <summary>Orden de evaluacion. Menor se evalua primero.</summary>
     int Order { get; }
 
+    /// <summary>Evalua la regla sobre el contexto recibido.</summary>
+    /// <param name="context">Contexto con todos los insumos ya resueltos.</param>
+    /// <returns>Resultado aprobatorio o de rechazo.</returns>
     PrintRuleResult Evaluate(PrintRuleContext context);
 }

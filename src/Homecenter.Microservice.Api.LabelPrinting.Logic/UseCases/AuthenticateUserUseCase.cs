@@ -14,7 +14,9 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Logic.UseCases;
 /// </summary>
 public sealed class AuthenticateUserUseCase : IAuthenticateUserUseCase
 {
+    /// <summary>Constante del contrato publico.</summary>
     public const string InvalidCredentialsCode = "INVALID_CREDENTIALS";
+    /// <summary>Constante del contrato publico.</summary>
     public const string InactiveUserCode = "USER_INACTIVE";
 
     private const string InvalidCredentialsMessage = "Usuario o contrasena incorrectos.";
@@ -23,6 +25,7 @@ public sealed class AuthenticateUserUseCase : IAuthenticateUserUseCase
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _tokenGenerator;
 
+    /// <summary>Crea una instancia con sus dependencias.</summary>
     public AuthenticateUserUseCase(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
@@ -33,6 +36,7 @@ public sealed class AuthenticateUserUseCase : IAuthenticateUserUseCase
         _tokenGenerator = tokenGenerator;
     }
 
+    /// <inheritdoc />
     public async Task<ApiResponse<LoginResponseDto>> ExecuteAsync(
         LoginRequestDto request,
         CancellationToken cancellationToken = default)

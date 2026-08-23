@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Configurations;
 
+/// <summary>Configuracion de persistencia de la entidad Zone.</summary>
 public sealed class ZoneConfiguration : IEntityTypeConfiguration<Zone>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<Zone> builder)
     {
         builder.ToTable("Zones");
@@ -16,8 +18,10 @@ public sealed class ZoneConfiguration : IEntityTypeConfiguration<Zone>
     }
 }
 
+/// <summary>Configuracion de persistencia de la entidad Document.</summary>
 public sealed class DocumentConfiguration : IEntityTypeConfiguration<Document>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<Document> builder)
     {
         builder.ToTable("Documents");
@@ -39,8 +43,10 @@ public sealed class DocumentConfiguration : IEntityTypeConfiguration<Document>
     }
 }
 
+/// <summary>Configuracion de persistencia de la entidad Label.</summary>
 public sealed class LabelConfiguration : IEntityTypeConfiguration<Label>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<Label> builder)
     {
         builder.ToTable("Labels");
@@ -62,8 +68,10 @@ public sealed class LabelConfiguration : IEntityTypeConfiguration<Label>
     }
 }
 
+/// <summary>Configuracion de persistencia de la entidad Product.</summary>
 public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<Product> builder)
     {
         builder.ToTable("Products");
@@ -74,8 +82,10 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
     }
 }
 
+/// <summary>Configuracion de persistencia de la entidad DocumentProduct.</summary>
 public sealed class DocumentProductConfiguration : IEntityTypeConfiguration<DocumentProduct>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<DocumentProduct> builder)
     {
         builder.ToTable("DocumentProducts");
@@ -97,8 +107,10 @@ public sealed class DocumentProductConfiguration : IEntityTypeConfiguration<Docu
     }
 }
 
+/// <summary>Configuracion de persistencia de la entidad InventoryAvailability.</summary>
 public sealed class InventoryAvailabilityConfiguration : IEntityTypeConfiguration<InventoryAvailability>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<InventoryAvailability> builder)
     {
         builder.ToTable("InventoryAvailability");

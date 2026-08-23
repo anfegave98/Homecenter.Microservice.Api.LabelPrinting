@@ -6,8 +6,13 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Entities.Enums;
 /// </summary>
 public static class RoleName
 {
+    /// <summary>Imprime y consulta unicamente su propio historial.</summary>
     public const string Operario = "Operario";
+
+    /// <summary>Autoriza reimpresiones con motivo y consulta el historial completo.</summary>
     public const string Supervisor = "Supervisor";
+
+    /// <summary>Administra la operacion y consulta indicadores.</summary>
     public const string Admin = "Admin";
 
     /// <summary>Roles autorizados para ejecutar una reimpresion.</summary>

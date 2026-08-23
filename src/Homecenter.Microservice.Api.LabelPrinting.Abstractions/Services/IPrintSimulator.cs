@@ -8,5 +8,10 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Abstractions.Services;
 /// </summary>
 public interface IPrintSimulator
 {
+    /// <summary>Ejecuta la impresion simulada de una etiqueta.</summary>
+    /// <param name="label">Etiqueta pre-generada a imprimir.</param>
+    /// <param name="correlationId">Llave de rastreo del caso.</param>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    /// <returns>Contenido ZPL enviado a impresion.</returns>
     Task<string> PrintAsync(Label label, Guid correlationId, CancellationToken cancellationToken = default);
 }

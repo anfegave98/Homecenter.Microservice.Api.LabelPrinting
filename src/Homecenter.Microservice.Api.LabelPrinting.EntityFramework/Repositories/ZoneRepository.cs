@@ -5,15 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Repositories;
 
+/// <summary>Componente ZoneRepository del submodulo de impresion.</summary>
 public sealed class ZoneRepository : IZoneRepository
 {
     private readonly LabelPrintingDbContext _context;
 
+    /// <summary>Crea una instancia con sus dependencias.</summary>
     public ZoneRepository(LabelPrintingDbContext context)
     {
         _context = context;
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyCollection<Zone>> GetAllAsync(CancellationToken cancellationToken = default) =>
         await _context.Zones
                       .Where(x => x.State)
@@ -21,6 +24,7 @@ public sealed class ZoneRepository : IZoneRepository
                       .AsNoTracking()
                       .ToListAsync(cancellationToken);
 
+    /// <inheritdoc />
     public Task<Zone?> GetByCodeAsync(string code, CancellationToken cancellationToken = default) =>
         _context.Zones.AsNoTracking().FirstOrDefaultAsync(x => x.Code == code && x.State, cancellationToken);
 }

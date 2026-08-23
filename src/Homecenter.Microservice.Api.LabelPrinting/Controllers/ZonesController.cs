@@ -17,11 +17,16 @@ public sealed class ZonesController : ControllerBase
 {
     private readonly IZoneRepository _zoneRepository;
 
+    /// <summary>Crea el controlador con su repositorio.</summary>
+    /// <param name="zoneRepository">Repositorio de zonas logisticas.</param>
     public ZonesController(IZoneRepository zoneRepository)
     {
         _zoneRepository = zoneRepository;
     }
 
+    /// <summary>Lista las zonas logisticas activas.</summary>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    /// <returns>Zonas disponibles para seleccionar al imprimir.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<ZoneDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken)

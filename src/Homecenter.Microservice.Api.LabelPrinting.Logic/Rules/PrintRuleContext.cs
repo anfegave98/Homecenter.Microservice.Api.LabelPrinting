@@ -14,12 +14,16 @@ public sealed class PrintRuleContext
     /// <summary>LPN o ETQ recibido en la solicitud.</summary>
     public required string RequestedKey { get; init; }
 
+    /// <summary>Zona solicitada por el operario. Null si no la indico.</summary>
     public string? RequestedZoneCode { get; init; }
 
+    /// <summary>Motivo de reimpresion informado en la solicitud.</summary>
     public string? ReprintReason { get; init; }
 
+    /// <summary>Usuario autenticado que ejecuta la solicitud.</summary>
     public required string UserName { get; init; }
 
+    /// <summary>Roles del usuario. Determinan si puede reimprimir.</summary>
     public required IReadOnlyCollection<string> UserRoles { get; init; }
 
     /// <summary>Etiqueta resuelta. Null cuando el LPN no existe.</summary>

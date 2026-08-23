@@ -17,6 +17,8 @@ public sealed class LabelsController : ControllerBase
 {
     private readonly IResolveLabelUseCase _resolveLabel;
 
+    /// <summary>Crea el controlador con su caso de uso.</summary>
+    /// <param name="resolveLabel">Caso de uso de resolucion de etiquetas.</param>
     public LabelsController(IResolveLabelUseCase resolveLabel)
     {
         _resolveLabel = resolveLabel;

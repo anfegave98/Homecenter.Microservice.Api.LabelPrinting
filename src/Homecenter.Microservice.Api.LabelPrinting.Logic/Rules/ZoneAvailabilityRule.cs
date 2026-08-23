@@ -19,8 +19,12 @@ public sealed class ZoneAvailabilityRule : IPrintRule
     private const string NotStockedReason = "El producto no esta abastecido en la zona.";
     private const string NoRecordReason = "El producto no tiene registro de inventario en la zona.";
 
+    /// <summary>Orden de evaluacion dentro del motor de reglas.</summary>
     public int Order => 3;
 
+    /// <summary>Evalua la regla sobre el contexto recibido.</summary>
+    /// <param name="context">Contexto con la etiqueta, el documento, la zona y el inventario ya resueltos.</param>
+    /// <returns>Resultado aprobatorio o de rechazo con su codigo de contrato.</returns>
     public PrintRuleResult Evaluate(PrintRuleContext context)
     {
         if (context.Label is null || context.Zone is null)

@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.EntityFramework.Configurations;
 
+/// <summary>Configuracion de persistencia de la entidad PrintRequest.</summary>
 public sealed class PrintRequestConfiguration : IEntityTypeConfiguration<PrintRequest>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<PrintRequest> builder)
     {
         builder.ToTable("PrintRequests");
@@ -37,8 +39,10 @@ public sealed class PrintRequestConfiguration : IEntityTypeConfiguration<PrintRe
     }
 }
 
+/// <summary>Configuracion de persistencia de la entidad PrintAuditLog.</summary>
 public sealed class PrintAuditLogConfiguration : IEntityTypeConfiguration<PrintAuditLog>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<PrintAuditLog> builder)
     {
         builder.ToTable("PrintAuditLogs");

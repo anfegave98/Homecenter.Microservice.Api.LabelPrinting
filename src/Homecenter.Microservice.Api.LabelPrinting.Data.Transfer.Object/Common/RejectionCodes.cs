@@ -37,9 +37,14 @@ public static class RejectionCodes
 /// </summary>
 public static class RuleCodes
 {
+    /// <summary>Regla 0: validacion de datos obligatorios.</summary>
     public const string RequiredData = "R0_REQUIRED_DATA";
+    /// <summary>Regla 1: existencia de la ETQ/LPN y de la zona.</summary>
     public const string LabelExists = "R1_LABEL_EXISTS";
+    /// <summary>Regla 2: estado del documento origen.</summary>
     public const string DocumentStatus = "R2_DOCUMENT_STATUS";
+    /// <summary>Regla 3: disponibilidad y abastecimiento por zona.</summary>
     public const string ZoneAvailability = "R3_ZONE_AVAILABILITY";
+    /// <summary>Regla 4: politica de reimpresion.</summary>
     public const string ReprintPolicy = "R4_REPRINT_POLICY";
 }

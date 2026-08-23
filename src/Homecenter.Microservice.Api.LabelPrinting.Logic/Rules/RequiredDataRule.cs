@@ -7,8 +7,12 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Logic.Rules;
 /// </summary>
 public sealed class RequiredDataRule : IPrintRule
 {
+    /// <summary>Orden de evaluacion dentro del motor de reglas.</summary>
     public int Order => 0;
 
+    /// <summary>Evalua la regla sobre el contexto recibido.</summary>
+    /// <param name="context">Contexto con la etiqueta, el documento, la zona y el inventario ya resueltos.</param>
+    /// <returns>Resultado aprobatorio o de rechazo con su codigo de contrato.</returns>
     public PrintRuleResult Evaluate(PrintRuleContext context)
     {
         var faltantes = new List<string>();
