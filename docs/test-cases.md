@@ -7,17 +7,19 @@ verifica y el resultado obtenido.
 
 ```
 dotnet test
-Passed!  -  Failed: 0, Passed: 57, Skipped: 0, Total: 57
+Passed!  -  Failed: 0, Passed: 68, Skipped: 0, Total: 68
 ```
 
-57 pruebas xUnit sobre `Homecenter.Microservice.Api.LabelPrinting.Logic.Tests`,
-organizadas en dos niveles:
+68 pruebas xUnit sobre `Homecenter.Microservice.Api.LabelPrinting.Logic.Tests`,
+organizadas en tres niveles:
 
 - **Reglas en aislamiento** (`Rules/`): cada regla recibe un contexto ya resuelto y se
   verifica su veredicto. No tocan base de datos, HTTP ni contenedor de dependencias.
 - **Casos de uso con dobles en memoria** (`UseCases/`): verifican lo que solo aparece
   al ensamblar todo — que se imprima únicamente cuando corresponde, que la auditoría
   se persista siempre y que el rechazo de negocio viaje como respuesta válida.
+- **Cifrado** (`Services/`): AES-256 se prueba a fondo porque un error ahí no se
+  manifiesta como excepción sino como datos que parecen protegidos y no lo están.
 
 ## Matriz de casos
 
@@ -35,10 +37,10 @@ organizadas en dos niveles:
 | CP-10 | Reimpresión solicitada por `Operario` | R4 | `ReprintPolicyRuleTests` · caso de uso | `REPRINT_NOT_AUTHORIZED` |
 | CP-11 | Solicitud sin LPN o sin usuario | R0 | `RequiredDataRuleTests` | `MISSING_REQUIRED_DATA` |
 | CP-12 | Historial consultado por `Operario` | Autorización | `GetPrintHistoryUseCaseTests` + verificación contra API real | Solo sus solicitudes (`scope: OWN`) |
-| CP-13 | 11 logins fallidos en un minuto | Rate limiting | **Pendiente — B7** | El middleware aún no existe |
+| CP-13 | 11 logins fallidos en un minuto | Rate limiting | Verificación contra el API corriendo | HTTP `429` exactamente en el intento 11 |
 
-**CP-13 no está cubierto y no se está presentando como si lo estuviera.** El rate
-limiting se implementa en el bloque de hardening; hasta entonces no hay nada que probar.
+CP-13 se verifica contra el servicio corriendo y no con una prueba unitaria: lo que
+hay que validar es la tubería HTTP completa, que es donde vive el limitador.
 
 ## Casos adicionales no exigidos por el plan
 
@@ -58,12 +60,15 @@ Se agregaron porque cubren decisiones de diseño que una matriz por regla no alc
 | Usuario auditado tomado del token | Si viniera del body, la auditoría dejaría de ser un control |
 | Solicitud sin zona (contrato del anexo) | `requetEtq.json` solo trae el LPN: omitirla debe seguir funcionando |
 | Bloque `legacy` con `hasMultipleProducts` | El consumidor del anexo no se rompe, pero tampoco se le oculta la degradación |
+| Dos cifrados del mismo texto difieren | Es la prueba que justifica el IV aleatorio: con IV fijo serían idénticos |
+| Una llave distinta no descifra | Si esto fallara, el cifrado no estaría protegiendo nada |
+| Mensaje cifrado manipulado | No se descifra silenciosamente en basura |
 
 ## Verificación por mutación
 
-Que 57 pruebas pasen no demuestra que detecten algo. Se introdujeron defectos
-deliberados en el código de producción para confirmar que las pruebas fallan cuando
-deben. Los tres mutantes fueron detectados y el código se restauró después:
+Que las pruebas pasen no demuestra que detecten algo. Se introdujeron defectos
+deliberados en el código de producción para confirmar que fallan cuando deben. Los
+tres mutantes fueron detectados y el código se restauró después:
 
 | Mutante introducido | Pruebas que fallaron |
 |---|---|
@@ -77,6 +82,8 @@ no la detecte no está protegiendo nada.
 ## Verificación end-to-end contra el API
 
 Ejecutada contra el servicio corriendo en `localhost:5080` con la base sembrada.
+
+### Reglas, historial e interfaz
 
 | Verificación | Resultado observado |
 |---|---|
@@ -96,6 +103,27 @@ Ejecutada contra el servicio corriendo en `localhost:5080` con la base sembrada.
 filtro de usuario es una decisión de presentación; lo vinculante es que el backend
 imponga la restricción desde el token, que es lo que confirman tanto la prueba
 unitaria como la diferencia de 27 contra 21 registros en la respuesta real.
+
+### Hardening
+
+| Verificación | Resultado observado |
+|---|---|
+| CP-13: 13 logins fallidos seguidos | Intentos 1–10 → `401`; **intento 11 → `429`** con `TOO_MANY_REQUESTS` |
+| Respuesta del `429` | Envelope estándar + `Retry-After: 60` + `X-Correlation-Id` |
+| Partición por usuario | Operario bloqueado en la solicitud 31 (límite 30); **supervisor sigue en `200`** |
+| Health check exento del límite | 20 llamadas consecutivas → 20 × `200` |
+| `correlationId` generado por el servicio | Presente en el header de toda respuesta |
+| `correlationId` propuesto por el cliente | Se respeta, para rastrear una operación entre servicios |
+| `correlationId` desmedido (300 caracteres) | Se descarta y se genera uno propio |
+| Excepción real no controlada (base inalcanzable) | `500` con envelope; **cero rastro de pila, Npgsql o SQL en el cuerpo**; detalle completo solo en el log |
+| Login con `encryptedPayload` en el formato del frontend | `success: true`, token emitido — interoperabilidad confirmada |
+| Payload cifrado manipulado | `400 INVALID_ENCRYPTED_PAYLOAD`, sin filtrar el motivo criptográfico |
+| Solicitud de login vacía | `400 MISSING_CREDENTIALS` |
+| Credenciales en claro | Siguen funcionando: el contrato admite ambas formas |
+| Log del servidor | Cero coincidencias de contraseñas o del payload cifrado |
+
+La verificación del manejador global se hizo levantando una instancia aparte apuntada
+a una base inalcanzable, para provocar una excepción **real** en lugar de simularla.
 
 ## Cómo reproducir
 

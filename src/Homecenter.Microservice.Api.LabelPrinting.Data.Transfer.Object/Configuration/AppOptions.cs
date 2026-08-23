@@ -49,8 +49,10 @@ public sealed class EncryptionOptions
     public string Key { get; set; } = string.Empty;
 
     /// <summary>
-    /// Vector de inicializacion en Base64. Debe decodificar a exactamente 16 bytes,
-    /// que es el tamano de bloque de AES.
+    /// Vector de inicializacion en Base64. **No se usa para cifrar.** AesEncryptionService
+    /// genera un IV aleatorio por operacion y lo transmite como prefijo del mensaje: un IV
+    /// fijo en CBC hace que dos textos identicos produzcan el mismo criptograma. El ajuste
+    /// se conserva por compatibilidad y, si se define, debe decodificar a 16 bytes.
     /// </summary>
     public string IV { get; set; } = string.Empty;
 }

@@ -2,7 +2,9 @@ using Homecenter.Microservice.Api.LabelPrinting.Abstractions.UseCases;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Common;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Printing;
 using Microsoft.AspNetCore.Authorization;
+using Homecenter.Microservice.Api.LabelPrinting.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
 
@@ -11,6 +13,7 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/print-requests")]
+[EnableRateLimiting(RateLimitingSetup.PrintingPolicy)]
 [Authorize]
 public sealed class PrintRequestsController : ControllerBase
 {
@@ -65,6 +68,12 @@ public sealed class PrintRequestsController : ControllerBase
     /// <param name="filter">Filtros de busqueda y paginacion.</param>
     /// <param name="cancellationToken">Token de cancelacion.</param>
     /// <returns>Pagina de registros de auditoria ordenada por fecha descendente.</returns>
+    // El historial es una consulta, no una transaccion: usa el limite de lectura y no
+
+    // el mas estricto del endpoint de impresion.
+
+    [EnableRateLimiting(RateLimitingSetup.QueryPolicy)]
+
     [HttpGet("history")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<PrintHistoryItemDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

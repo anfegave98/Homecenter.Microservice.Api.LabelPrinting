@@ -11,8 +11,10 @@ using Homecenter.Microservice.Api.LabelPrinting.Logic.Rules;
 using Homecenter.Microservice.Api.LabelPrinting.Logic.Security;
 using Homecenter.Microservice.Api.LabelPrinting.Logic.Services;
 using Homecenter.Microservice.Api.LabelPrinting.Logic.UseCases;
+using Homecenter.Microservice.Api.LabelPrinting.Middleware;
 using Homecenter.Microservice.Api.LabelPrinting.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -33,6 +35,7 @@ builder.Services.Configure<SwaggerOptions>(builder.Configuration.GetSection(Swag
 
 var corsOptions = builder.Configuration.GetSection(CorsOptions.SectionName).Get<CorsOptions>() ?? new CorsOptions();
 var swaggerOptions = builder.Configuration.GetSection(SwaggerOptions.SectionName).Get<SwaggerOptions>() ?? new SwaggerOptions();
+var rateLimitingOptions = builder.Configuration.GetSection(RateLimitingOptions.SectionName).Get<RateLimitingOptions>() ?? new RateLimitingOptions();
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 var encryptionOptions = builder.Configuration.GetSection(EncryptionOptions.SectionName).Get<EncryptionOptions>() ?? new EncryptionOptions();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
@@ -62,6 +65,7 @@ builder.Services.AddScoped<IPrintRequestRepository, PrintRequestRepository>();
 
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
 builder.Services.AddScoped<ICurrentUserAccessor, CurrentUserAccessor>();
 builder.Services.AddScoped<IPrintSimulator, PrintSimulator>();
 
@@ -121,7 +125,11 @@ builder.Services.AddCors(options =>
 
         policy.WithOrigins(corsOptions.AllowedOrigins)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              // El navegador oculta los headers de respuesta cross-origin salvo los
+              // declarados aqui. Sin esto el frontend no puede leer el identificador de
+              // correlacion ni saber cuantos segundos esperar tras un 429.
+              .WithExposedHeaders(CorrelationIdMiddleware.HeaderName, "Retry-After");
     }));
 
 // ---------------------------------------------------------------------------
@@ -132,6 +140,21 @@ if (!string.IsNullOrWhiteSpace(connectionString))
 {
     healthChecks.AddNpgSql(connectionString, name: "database", tags: new[] { "db" });
 }
+
+// ---------------------------------------------------------------------------
+// Limitacion de solicitudes. Se calibra desde configuracion para poder reaccionar
+// ante un pico de trafico sin recompilar ni redesplegar.
+// ---------------------------------------------------------------------------
+builder.Services.AddConfiguredRateLimiting(rateLimitingOptions);
+
+// Render termina TLS en su proxy: sin esto, RemoteIpAddress es la del proxy y todas
+// las solicitudes anonimas compartirian una sola particion de rate limiting.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -210,6 +233,14 @@ await using (var scope = app.Services.CreateAsyncScope())
     }
 }
 
+app.UseForwardedHeaders();
+
+// El manejo de errores va primero: solo asi captura lo que falle en el resto de la
+// tuberia. El identificador de correlacion se asigna justo despues, para que ese
+// manejador ya lo tenga disponible al reportar el fallo.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<CorrelationIdMiddleware>();
+
 // Swagger queda gobernado por configuracion. En esta entrega permanece habilitado en
 // el ambiente publicado para que el evaluador pueda probar la API: decision consciente
 // y documentada, no un descuido de hardening.
@@ -222,6 +253,13 @@ if (swaggerOptions.Enabled)
 app.UseCors(CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Despues de autenticar: asi el limite se cuenta por usuario y no por IP compartida.
+if (rateLimitingOptions.Enabled)
+{
+    app.UseRateLimiter();
+}
+
 app.MapControllers();
 
 app.Run();

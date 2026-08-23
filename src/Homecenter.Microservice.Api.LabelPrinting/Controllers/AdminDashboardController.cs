@@ -3,7 +3,9 @@ using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Common;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Printing;
 using Homecenter.Microservice.Api.LabelPrinting.Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Homecenter.Microservice.Api.LabelPrinting.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
 
@@ -12,6 +14,7 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/admin/dashboard")]
+[EnableRateLimiting(RateLimitingSetup.QueryPolicy)]
 [Authorize(Roles = RoleName.Admin)]
 public sealed class AdminDashboardController : ControllerBase
 {

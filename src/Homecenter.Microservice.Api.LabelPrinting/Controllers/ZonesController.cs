@@ -2,7 +2,9 @@ using Homecenter.Microservice.Api.LabelPrinting.Abstractions.Repositories;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Catalog;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Common;
 using Microsoft.AspNetCore.Authorization;
+using Homecenter.Microservice.Api.LabelPrinting.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
 
@@ -12,6 +14,7 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/zones")]
+[EnableRateLimiting(RateLimitingSetup.QueryPolicy)]
 [Authorize]
 public sealed class ZonesController : ControllerBase
 {

@@ -21,7 +21,13 @@ que está publicado en GitHub y que nada en el log lo delate.
 | Cadena de conexión | `ConnectionStrings:DefaultConnection` | Cadena Npgsql | `ConnectionStrings__DefaultConnection` |
 | Clave de firma JWT | `Jwt:SecretKey` | Texto, **≥ 32 bytes UTF-8** | `Jwt__SecretKey` |
 | Llave AES | `Encryption:Key` | **Base64 de 32 bytes** (AES-256) | `Encryption__Key` |
-| IV AES | `Encryption:IV` | **Base64 de 16 bytes** (bloque AES) | `Encryption__IV` |
+
+
+> **`Encryption__IV` ya no se define.** `AesEncryptionService` genera un vector de
+> inicializacion aleatorio por operacion y lo transmite como prefijo del mensaje: un IV
+> fijo en CBC hace que dos textos identicos produzcan el mismo criptograma, revelando
+> cuando dos valores son iguales sin descifrarlos. El ajuste se conserva por
+> compatibilidad y solo se valida su formato si alguien lo define.
 
 El doble guion bajo (`__`) es la convención de .NET para expresar jerarquía de
 configuración en variables de entorno: `Jwt__SecretKey` sobrescribe `Jwt:SecretKey`.
@@ -32,7 +38,7 @@ configuración en variables de entorno: `Jwt__SecretKey` sobrescribe `Jwt:Secret
 `Encoding.UTF8.GetBytes(SecretKey)`. La validación mide exactamente lo mismo, para que
 no exista la posibilidad de que pase el arranque y falle al firmar.
 
-### Por qué la llave AES se valida aunque el cifrado esté apagado
+### Por qué la llave AES solo se valida con el cifrado encendido
 
 No se valida. Si `Encryption:Enabled` es `false`, sus llaves no participan en ninguna
 operación y exigirlas bloquearía el arranque por una funcionalidad que no se usa. La
@@ -62,7 +68,7 @@ versiona".
 
 ```bash
 # Genera un juego nuevo de claves (no reutilices las de desarrollo)
-node -e "const c=require('crypto');console.log('Jwt__SecretKey     =',c.randomBytes(64).toString('base64'));console.log('Encryption__Key    =',c.randomBytes(32).toString('base64'));console.log('Encryption__IV     =',c.randomBytes(16).toString('base64'))"
+node -e "const c=require('crypto');console.log('Jwt__SecretKey     =',c.randomBytes(64).toString('base64'));console.log('Encryption__Key    =',c.randomBytes(32).toString('base64'));"
 ```
 
 La cadena de conexión no se escribe a mano: Render la inyecta desde la base de datos

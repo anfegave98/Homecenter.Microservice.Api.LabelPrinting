@@ -1,5 +1,6 @@
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Common;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
@@ -10,6 +11,9 @@ namespace Homecenter.Microservice.Api.LabelPrinting.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/health")]
+// Sin limite: Render sondea este endpoint para decidir si la instancia sigue viva.
+// Un 429 aqui le haria concluir que el servicio esta caido y reiniciarlo.
+[DisableRateLimiting]
 public sealed class HealthController : ControllerBase
 {
     private const string ServiceName = "Homecenter.Microservice.Api.LabelPrinting";

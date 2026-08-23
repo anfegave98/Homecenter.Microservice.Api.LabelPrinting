@@ -109,7 +109,16 @@ public static class SecretsValidator
         }
 
         ValidateBase64Key(encryption.Key, "Encryption:Key", AesKeyBytes, failures);
-        ValidateBase64Key(encryption.IV, "Encryption:IV", AesBlockBytes, failures);
+
+        // Encryption:IV ya NO se exige: AesEncryptionService genera un vector de
+        // inicializacion aleatorio por operacion y lo transmite junto al mensaje, porque
+        // un IV fijo en CBC delata cuando dos textos son iguales. El ajuste se conserva
+        // por compatibilidad de configuracion y solo se valida su formato si alguien lo
+        // define, para que un valor equivocado no quede ahi aparentando estar en uso.
+        if (!string.IsNullOrWhiteSpace(encryption.IV) && encryption.IV != Placeholder)
+        {
+            ValidateBase64Key(encryption.IV, "Encryption:IV", AesBlockBytes, failures);
+        }
     }
 
     private static void ValidateBase64Key(string value, string setting, int expectedBytes, List<string> failures)
