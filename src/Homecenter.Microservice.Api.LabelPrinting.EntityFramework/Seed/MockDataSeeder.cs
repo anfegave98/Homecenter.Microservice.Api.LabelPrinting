@@ -211,71 +211,116 @@ public sealed class MockDataSeeder
 
         foreach (var order in orders)
         {
-            if (await _context.Documents.AnyAsync(x => x.DocumentNumber == order.Document.DocumentNumber, cancellationToken))
-            {
-                continue;
-            }
+            var document = await _context.Documents
+                .FirstOrDefaultAsync(x => x.DocumentNumber == order.Document.DocumentNumber, cancellationToken);
 
-            var zone = await _context.Zones.FirstOrDefaultAsync(x => x.Code == order.Zone, cancellationToken);
-            if (zone is null)
+            if (document is null)
             {
-                _logger.LogWarning("Zona '{Zone}' no encontrada para el documento {Document}.", order.Zone, order.Document.DocumentNumber);
-                continue;
-            }
-
-            if (!Enum.TryParse<DocumentStatus>(order.Document.Status, ignoreCase: true, out var status))
-            {
-                _logger.LogWarning("Estado '{Status}' no reconocido para el documento {Document}.", order.Document.Status, order.Document.DocumentNumber);
-                continue;
-            }
-
-            var document = new Document
-            {
-                RequestId = order.RequestId,
-                DocumentType = order.Document.DocumentType,
-                DocumentNumber = order.Document.DocumentNumber,
-                Status = status,
-                IdZone = zone.Id,
-                RequestedBy = order.RequestedBy,
-                RequestDateTime = order.RequestDateTime
-            };
-
-            _context.Documents.Add(document);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            foreach (var label in order.Labels)
-            {
-                _context.Labels.Add(new Label
+                document = await CreateDocumentAsync(order, cancellationToken);
+                if (document is null)
                 {
-                    IdDocument = document.Id,
-                    EtqId = label.EtqId,
-                    LpnId = label.LpnId,
-                    IsPreGenerated = label.IsPreGenerated,
-                    TemplateCode = label.TemplateCode,
-                    Zpl = label.Zpl
-                });
-            }
-
-            foreach (var item in order.Products)
-            {
-                var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductCode == item.ProductCode, cancellationToken);
-                if (product is null)
-                {
-                    _logger.LogWarning("Producto '{Product}' no encontrado para el documento {Document}.", item.ProductCode, document.DocumentNumber);
                     continue;
                 }
-
-                _context.DocumentProducts.Add(new DocumentProduct
-                {
-                    IdDocument = document.Id,
-                    IdProduct = product.Id,
-                    RequestedQty = item.RequestedQty,
-                    Uom = item.Uom
-                });
             }
 
-            await _context.SaveChangesAsync(cancellationToken);
+            // Las etiquetas se siembran aunque el documento ya exista, comparando por
+            // LpnId. En la operacion real una ola posterior agrega etiquetas nuevas a un
+            // documento vigente; si el seeder omitiera el documento entero por existir,
+            // esas etiquetas nunca llegarian a un ambiente ya desplegado.
+            await SeedLabelsAsync(document, order, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Crea el documento con su zona, estado y productos.
+    /// Devuelve null si la zona o el estado del archivo semilla no son reconocibles.
+    /// </summary>
+    private async Task<Document?> CreateDocumentAsync(OrderSeed order, CancellationToken cancellationToken)
+    {
+        var zone = await _context.Zones.FirstOrDefaultAsync(x => x.Code == order.Zone, cancellationToken);
+        if (zone is null)
+        {
+            _logger.LogWarning("Zona '{Zone}' no encontrada para el documento {Document}.", order.Zone, order.Document.DocumentNumber);
+            return null;
+        }
+
+        if (!Enum.TryParse<DocumentStatus>(order.Document.Status, ignoreCase: true, out var status))
+        {
+            _logger.LogWarning("Estado '{Status}' no reconocido para el documento {Document}.", order.Document.Status, order.Document.DocumentNumber);
+            return null;
+        }
+
+        var document = new Document
+        {
+            RequestId = order.RequestId,
+            DocumentType = order.Document.DocumentType,
+            DocumentNumber = order.Document.DocumentNumber,
+            Status = status,
+            IdZone = zone.Id,
+            RequestedBy = order.RequestedBy,
+            RequestDateTime = order.RequestDateTime
+        };
+
+        _context.Documents.Add(document);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        foreach (var item in order.Products)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductCode == item.ProductCode, cancellationToken);
+            if (product is null)
+            {
+                _logger.LogWarning("Producto '{Product}' no encontrado para el documento {Document}.", item.ProductCode, document.DocumentNumber);
+                continue;
+            }
+
+            _context.DocumentProducts.Add(new DocumentProduct
+            {
+                IdDocument = document.Id,
+                IdProduct = product.Id,
+                RequestedQty = item.RequestedQty,
+                Uom = item.Uom
+            });
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return document;
+    }
+
+    /// <summary>Agrega unicamente las etiquetas del documento que aun no existen.</summary>
+    private async Task SeedLabelsAsync(Document document, OrderSeed order, CancellationToken cancellationToken)
+    {
+        var agregadas = 0;
+
+        foreach (var label in order.Labels)
+        {
+            if (await _context.Labels.AnyAsync(x => x.LpnId == label.LpnId, cancellationToken))
+            {
+                continue;
+            }
+
+            _context.Labels.Add(new Label
+            {
+                IdDocument = document.Id,
+                EtqId = label.EtqId,
+                LpnId = label.LpnId,
+                IsPreGenerated = label.IsPreGenerated,
+                TemplateCode = label.TemplateCode,
+                Zpl = label.Zpl
+            });
+
+            agregadas++;
+        }
+
+        if (agregadas == 0)
+        {
+            return;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation(
+            "Se agregaron {Cantidad} etiqueta(s) al documento {Document}.",
+            agregadas,
+            document.DocumentNumber);
     }
 
     private async Task SeedInventoryAsync(string mocksPath, CancellationToken cancellationToken)
