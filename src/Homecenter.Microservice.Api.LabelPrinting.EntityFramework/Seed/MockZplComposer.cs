@@ -65,16 +65,18 @@ public static class MockZplComposer
         builder.Append("^CF0,30^FO40,125^FDEtiqueta de unidad logistica^FS");
         builder.Append("^FO40,175^GB732,4,4^FS");
 
-        // Identificacion de la ETQ
+        // Identificacion de la ETQ. Ambos valores se acotan con ^FB (field block) porque
+        // ni el codigo de zona ni el de ETQ tienen longitud fija: uno largo se saldria
+        // del borde derecho de la etiqueta, y ZPL no avisa, simplemente lo corta.
         builder.Append("^CF0,28^FO40,205^FDETQ^FS");
-        builder.Append("^CF0,52^FO40,240^FD").Append(Sanitize(etqId)).Append("^FS");
+        builder.Append("^CF0,46^FO40,240^FB360,1,0,L^FD").Append(Sanitize(etqId)).Append("^FS");
 
         builder.Append("^CF0,28^FO420,205^FDZONA^FS");
-        builder.Append("^CF0,52^FO420,240^FD").Append(Sanitize(zoneCode)).Append("^FS");
+        builder.Append("^CF0,46^FO420,240^FB352,1,0,L^FD").Append(Sanitize(zoneCode)).Append("^FS");
 
         // Documento origen
         builder.Append("^CF0,28^FO40,320^FDDOCUMENTO^FS");
-        builder.Append("^CF0,40^FO40,355^FD")
+        builder.Append("^CF0,40^FO40,355^FB732,1,0,L^FD")
                .Append(Sanitize(document.DocumentNumber))
                .Append(" - ")
                .Append(Sanitize(document.DocumentType))
