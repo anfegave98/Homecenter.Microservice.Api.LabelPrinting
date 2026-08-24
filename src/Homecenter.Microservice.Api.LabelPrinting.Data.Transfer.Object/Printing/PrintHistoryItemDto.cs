@@ -27,7 +27,7 @@ public sealed class PrintHistoryItemDto
     /// <summary>Documento origen asociado.</summary>
     public string? DocumentNumber { get; init; }
 
-    /// <summary>APPROVED o REJECTED.</summary>
+    /// <summary>APPROVED, REJECTED o PENDING_APPROVAL.</summary>
     public required string Result { get; init; }
 
     /// <summary>PRINT o REPRINT.</summary>
@@ -44,4 +44,13 @@ public sealed class PrintHistoryItemDto
 
     /// <summary>Fecha y hora de procesamiento, en UTC.</summary>
     public required DateTimeOffset ProcessedAt { get; init; }
+
+    /// <summary>Supervisor o Admin que resolvio la reimpresion. Null si no hubo autorizacion.</summary>
+    public string? ApprovedBy { get; init; }
+
+    /// <summary>Fecha y hora de la decision del autorizador, en UTC.</summary>
+    public DateTimeOffset? DecidedAt { get; init; }
+
+    /// <summary>Comentario del autorizador al aprobar o negar.</summary>
+    public string? ApprovalNote { get; init; }
 }

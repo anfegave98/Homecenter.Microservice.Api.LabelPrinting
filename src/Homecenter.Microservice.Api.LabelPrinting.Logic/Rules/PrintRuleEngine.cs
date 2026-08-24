@@ -53,4 +53,13 @@ public sealed class PrintRuleEvaluation
 
     /// <summary>True cuando ninguna regla fue violada.</summary>
     public bool IsApproved => Failure is null;
+
+    /// <summary>
+    /// True cuando la solicitud no se cierra: quedo esperando que un rol autorizado
+    /// la resuelva.
+    /// </summary>
+    public bool RequiresApproval => Failure?.RequiresApproval == true;
+
+    /// <summary>True cuando alguna regla cerro la solicitud con un rechazo definitivo.</summary>
+    public bool IsRejected => Failure is not null && !Failure.RequiresApproval;
 }

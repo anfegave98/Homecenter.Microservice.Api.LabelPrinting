@@ -44,6 +44,21 @@ public class PrintRequest : EntityBase
     /// <summary>Justificacion capturada cuando el evento es una reimpresion.</summary>
     public string? ReprintReason { get; set; }
 
+    /// <summary>
+    /// Supervisor o Admin que resolvio una reimpresion que quedo pendiente.
+    ///
+    /// Se guarda aparte de IdUser a proposito: quien pide la reimpresion y quien la
+    /// autoriza son dos personas distintas, y una auditoria que las confunda no sirve
+    /// para responder quien aprobo el duplicado.
+    /// </summary>
+    public int? IdApprover { get; set; }
+
+    /// <summary>Fecha y hora en que se resolvio la solicitud pendiente, en UTC.</summary>
+    public DateTimeOffset? DecidedAt { get; set; }
+
+    /// <summary>Justificacion que dejo quien aprobo o nego la reimpresion.</summary>
+    public string? ApprovalNote { get; set; }
+
     /// <summary>Fecha y hora de procesamiento, en UTC.</summary>
     public DateTimeOffset ProcessedAt { get; set; } = DateTimeOffset.UtcNow;
 
@@ -52,6 +67,9 @@ public class PrintRequest : EntityBase
 
     /// <summary>Usuario solicitante.</summary>
     public User User { get; set; } = null!;
+
+    /// <summary>Usuario que resolvio la solicitud pendiente.</summary>
+    public User? Approver { get; set; }
 
     /// <summary>Traza de las reglas evaluadas durante el procesamiento.</summary>
     public ICollection<PrintAuditLog> AuditLogs { get; set; } = new List<PrintAuditLog>();

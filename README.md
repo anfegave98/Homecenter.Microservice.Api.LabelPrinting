@@ -108,10 +108,21 @@ primera violación**, conservando la traza de lo evaluado hasta el corte.
 | **R1** `LabelExistsRule` | La ETQ/LPN o la zona no existen | `LPN_NOT_FOUND` · `ZONE_NOT_FOUND` |
 | **R2** `DocumentStatusRule` | Documento `ANULADA` o `DEVUELTA` | `INVALID_DOCUMENT_STATUS` |
 | **R3** `ZoneAvailabilityRule` | Algún producto sin cantidad suficiente o no abastecido | `INSUFFICIENT_INVENTORY` · `NOT_STOCKED` |
-| **R4** `ReprintPolicyRule` | Reimpresión sin rol autorizado o sin motivo | `REPRINT_NOT_AUTHORIZED` · `REPRINT_REASON_REQUIRED` |
+| **R4** `ReprintPolicyRule` | Reimpresión sin motivo; **deriva** a autorización si el rol no la ejecuta | `REPRINT_REASON_REQUIRED` · `REPRINT_PENDING_APPROVAL` |
 
 R3 no da un rechazo genérico: `error.details` trae **qué producto** falló, cuánto se
 pidió, cuánto hay y por qué.
+
+R4 es la única regla que **no cierra** la solicitud. Un operario que necesita reimprimir
+—etiqueta rota, atasco de impresora— la envía con su motivo y queda en
+`PENDING_APPROVAL` hasta que un `Supervisor` o `Admin` la resuelva. Negarle el paso sin
+salida sería peor control y no mejor: es él quien detecta el problema, y quien terminaría
+pidiendo prestada una sesión ajena para imprimir.
+
+Autorizar **no imprime a ciegas**: las reglas se vuelven a evaluar con los datos del
+momento de la decisión. Si el documento se anuló o el inventario de la zona se agotó
+mientras la solicitud esperaba, la respuesta es un rechazo con ese motivo y no con el
+visto bueno. Un permiso no puede volver válida una impresión que dejó de serlo.
 
 ---
 
@@ -123,6 +134,9 @@ pidió, cuánto hay y por qué.
 | GET | `api/zones` | Autenticado | 60/min |
 | GET | `api/labels/{lpn}` | Autenticado | 60/min |
 | POST | `api/print-requests` | Autenticado | 30/min |
+| GET | `api/print-requests/pending` | `Supervisor` · `Admin` | 60/min |
+| POST | `api/print-requests/{id}/approve` | `Supervisor` · `Admin` | 30/min |
+| POST | `api/print-requests/{id}/reject` | `Supervisor` · `Admin` | 30/min |
 | GET | `api/print-requests/history` | Autenticado *(operario: solo lo suyo)* | 60/min |
 | GET | `api/admin/dashboard` | Admin | 60/min |
 | GET | `api/health` | Público | sin límite |
@@ -255,7 +269,7 @@ descartó, y cada ambigüedad quedó documentada como decisión:
 | H2 | El anexo solo trae `lpn`, pero la UI exige LPN + Zona + Usuario | Zona es override opcional; el usuario sale del JWT, no del body |
 | H3 | `responseEtq.json` expone **un solo SKU**, pero una ETQ puede llevar varios | Se devuelve el arreglo completo **más** el bloque `legacy` con `hasMultipleProducts` |
 | H4 | **No hay archivo de inventario** y la Regla 3 lo necesita | Se creó `mocks/inventoryAvailability.json` |
-| H5 | No se define quién puede reimprimir | Rol `Supervisor`/`Admin` + motivo obligatorio |
+| H5 | No se define quién puede reimprimir | Motivo obligatorio para todos; el rol `Supervisor`/`Admin` reimprime directo, el resto envía la solicitud a autorización |
 | H6 | No se define el HTTP del rechazo de negocio | `200` con `success: false` |
 
 El ZPL de los anexos **se usa sin modificar**, incluido su contenido genérico de Zebra:

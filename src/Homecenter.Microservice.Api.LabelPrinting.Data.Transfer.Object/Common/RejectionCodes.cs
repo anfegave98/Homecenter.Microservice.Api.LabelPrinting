@@ -27,8 +27,22 @@ public static class RejectionCodes
     /// <summary>La reimpresion exige motivo (Regla 4).</summary>
     public const string ReprintReasonRequired = "REPRINT_REASON_REQUIRED";
 
-    /// <summary>El rol del usuario no autoriza reimpresiones (Regla 4).</summary>
-    public const string ReprintNotAuthorized = "REPRINT_NOT_AUTHORIZED";
+    /// <summary>
+    /// La reimpresion quedo esperando la autorizacion de un Supervisor o Admin (Regla 4).
+    ///
+    /// No es un rechazo: la solicitud sigue viva. Se expone con success=false porque no
+    /// se entrego ZPL, y el frontend lo distingue de un rechazo por este codigo.
+    /// </summary>
+    public const string ReprintPendingApproval = "REPRINT_PENDING_APPROVAL";
+
+    /// <summary>Un Supervisor o Admin nego la reimpresion pendiente.</summary>
+    public const string ReprintRejectedByApprover = "REPRINT_REJECTED_BY_APPROVER";
+
+    /// <summary>La solicitud pendiente no existe o ya fue resuelta por otro autorizador.</summary>
+    public const string PendingRequestNotFound = "PENDING_REQUEST_NOT_FOUND";
+
+    /// <summary>Negar una reimpresion pendiente exige dejar el motivo por escrito.</summary>
+    public const string ApprovalNoteRequired = "APPROVAL_NOTE_REQUIRED";
 }
 
 /// <summary>
@@ -47,4 +61,6 @@ public static class RuleCodes
     public const string ZoneAvailability = "R3_ZONE_AVAILABILITY";
     /// <summary>Regla 4: politica de reimpresion.</summary>
     public const string ReprintPolicy = "R4_REPRINT_POLICY";
+    /// <summary>Decision de un autorizador sobre una reimpresion pendiente.</summary>
+    public const string ReprintApproval = "R4A_REPRINT_APPROVAL";
 }

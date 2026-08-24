@@ -36,6 +36,35 @@ public interface IPrintRequestRepository
         int? restrictToUserId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Consulta las reimpresiones que esperan decision de un autorizador.
+    /// </summary>
+    /// <param name="page">Pagina solicitada, base 1.</param>
+    /// <param name="pageSize">Registros por pagina.</param>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    /// <returns>Pagina de pendientes, de la mas antigua a la mas reciente.</returns>
+    Task<PagedResult<PrintHistoryItemDto>> GetPendingApprovalsAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Recupera una solicitud que siga pendiente de autorizacion.
+    /// </summary>
+    /// <param name="id">Identificador de la solicitud en la auditoria.</param>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    /// <returns>
+    /// La solicitud con su solicitante cargado, o null si no existe o ya fue resuelta.
+    /// Devolver null en ambos casos es deliberado: quien consulta no necesita saber si
+    /// el identificador existio, solo que ya no hay nada que decidir.
+    /// </returns>
+    Task<PrintRequest?> GetPendingByIdAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>Persiste la decision tomada sobre una solicitud pendiente.</summary>
+    /// <param name="request">Solicitud con su desenlace y autorizador ya asignados.</param>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    Task UpdateAsync(PrintRequest request, CancellationToken cancellationToken = default);
+
     /// <summary>Calcula los indicadores operativos de impresion.</summary>
     /// <param name="cancellationToken">Token de cancelacion.</param>
     /// <returns>Totales de solicitudes, aprobaciones, rechazos y reimpresiones.</returns>

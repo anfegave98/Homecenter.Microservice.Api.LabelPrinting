@@ -113,8 +113,36 @@ public sealed class InMemoryPrintRequestRepository : IPrintRequestRepository
             Approved = 0,
             Rejected = 0,
             Reprints = 0,
+            PendingApproval = 0,
             RejectionsByCode = new Dictionary<string, int>()
         });
+
+    /// <summary>Solicitudes que el doble entrega como pendientes de autorizacion.</summary>
+    public List<PrintRequest> Pending { get; } = new();
+
+    /// <summary>Solicitudes actualizadas tras una decision del autorizador.</summary>
+    public List<PrintRequest> Updated { get; } = new();
+
+    public Task<PagedResult<PrintHistoryItemDto>> GetPendingApprovalsAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(new PagedResult<PrintHistoryItemDto>
+        {
+            Items = Array.Empty<PrintHistoryItemDto>(),
+            Total = Pending.Count,
+            Page = page,
+            PageSize = pageSize
+        });
+
+    public Task<PrintRequest?> GetPendingByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Pending.FirstOrDefault(x => x.Id == id));
+
+    public Task UpdateAsync(PrintRequest request, CancellationToken cancellationToken = default)
+    {
+        Updated.Add(request);
+        return Task.CompletedTask;
+    }
 
     /// <summary>Restriccion por usuario con la que el caso de uso llamo al repositorio.</summary>
     public int? LastRestrictToUserId { get; private set; }

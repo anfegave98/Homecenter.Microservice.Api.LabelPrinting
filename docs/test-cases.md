@@ -34,10 +34,16 @@ organizadas en tres niveles:
 | CP-07 | Primera impresión válida | R5 | `ProcessPrintRequestUseCaseTests.Aprueba_la_primera_impresion_y_entrega_el_zpl` | `APPROVED` / `PRINT`, ZPL entregado |
 | CP-08 | Reimpresión con rol y motivo | R4 | `ReprintPolicyRuleTests` (Theory Supervisor/Admin) · caso de uso | `APPROVED` / `REPRINT`, motivo auditado |
 | CP-09 | Reimpresión sin motivo | R4 | `ReprintPolicyRuleTests` (Theory null/vacío/espacios) | `REPRINT_REASON_REQUIRED` |
-| CP-10 | Reimpresión solicitada por `Operario` | R4 | `ReprintPolicyRuleTests` · caso de uso | `REPRINT_NOT_AUTHORIZED` |
+| CP-10 | Reimpresión solicitada por `Operario` | R4 | `ReprintPolicyRuleTests.Deriva_a_autorizacion...` · caso de uso | `PENDING_APPROVAL`, no se imprime |
 | CP-11 | Solicitud sin LPN o sin usuario | R0 | `RequiredDataRuleTests` | `MISSING_REQUIRED_DATA` |
 | CP-12 | Historial consultado por `Operario` | Autorización | `GetPrintHistoryUseCaseTests` + verificación contra API real | Solo sus solicitudes (`scope: OWN`) |
 | CP-13 | 11 logins fallidos en un minuto | Rate limiting | Verificación contra el API corriendo | HTTP `429` exactamente en el intento 11 |
+| CP-14 | Supervisor autoriza una reimpresión pendiente | R4A | `ResolveReprintApprovalUseCaseTests.Imprime_y_cierra_la_solicitud...` | `APPROVED` / `REPRINT`, ZPL entregado |
+| CP-15 | Se autoriza, pero el documento se anuló mientras esperaba | R2 + R4A | `ResolveReprintApprovalUseCaseTests.No_imprime_cuando_el_documento_se_anulo...` | `INVALID_DOCUMENT_STATUS`, sin imprimir |
+| CP-16 | Se autoriza, pero el inventario se agotó mientras esperaba | R3 + R4A | `ResolveReprintApprovalUseCaseTests.No_imprime_cuando_el_inventario_se_agoto...` | `INSUFFICIENT_INVENTORY`, sin imprimir |
+| CP-17 | Supervisor niega la reimpresión | R4A | `ResolveReprintApprovalUseCaseTests.Niega_la_solicitud...` | `REPRINT_REJECTED_BY_APPROVER`, motivo auditado |
+| CP-18 | Se intenta negar sin motivo | R4A | `ResolveReprintApprovalUseCaseTests.Exige_motivo_para_negar` (Theory) | `APPROVAL_NOTE_REQUIRED`, la solicitud no se toca |
+| CP-19 | Dos autorizadores sobre la misma solicitud | R4A | `ResolveReprintApprovalUseCaseTests.Responde_sin_encontrar_nada...` | `PENDING_REQUEST_NOT_FOUND` para el segundo |
 
 CP-13 se verifica contra el servicio corriendo y no con una prueba unitaria: lo que
 hay que validar es la tubería HTTP completa, que es donde vive el limitador.
@@ -58,6 +64,8 @@ Se agregaron porque cubren decisiones de diseño que una matriz por regla no alc
 | Auditoría del rechazo y del LPN inexistente | Sin ese registro, un LPN mal digitado repetidamente sería invisible |
 | `correlationId` presente en el rechazo de negocio | El rechazo viaja como HTTP 200 y aun así debe poder rastrearse |
 | Usuario auditado tomado del token | Si viniera del body, la auditoría dejaría de ser un control |
+| Solicitante y autorizador registrados por separado | Confundirlos impediría responder quién aprobó el duplicado |
+| Traza de la segunda evaluación anexada sin borrar la primera | Se validó al pedir y se validó al autorizar: son dos momentos y pueden diferir |
 | Solicitud sin zona (contrato del anexo) | `requetEtq.json` solo trae el LPN: omitirla debe seguir funcionando |
 | Bloque `legacy` con `hasMultipleProducts` | El consumidor del anexo no se rompe, pero tampoco se le oculta la degradación |
 | Dos cifrados del mismo texto difieren | Es la prueba que justifica el IV aleatorio: con IV fijo serían idénticos |
@@ -68,16 +76,18 @@ Se agregaron porque cubren decisiones de diseño que una matriz por regla no alc
 
 Que las pruebas pasen no demuestra que detecten algo. Se introdujeron defectos
 deliberados en el código de producción para confirmar que fallan cuando deben. Los
-tres mutantes fueron detectados y el código se restauró después:
+mutantes fueron detectados y el código se restauró después:
 
 | Mutante introducido | Pruebas que fallaron |
 |---|---|
 | Límite exclusivo: `availableQty >= requested` → `>` | 2 (regla y caso de uso del límite exacto) |
 | `Operario` agregado a los roles autorizados a reimprimir | 3 |
 | Historial sin restricción por usuario (`restrictToUserId = null` siempre) | 2 |
+| Autorización sin revalidar reglas (se aprueba lo que el supervisor firme) | 2 (documento anulado e inventario agotado) |
 
 El tercero es el más relevante: es la fuga de datos entre operarios, y una prueba que
-no la detecte no está protegiendo nada.
+no la detecte no está protegiendo nada. El cuarto protege la otra mitad del control:
+sin él, una autorización tardía imprimiría sobre stock que ya no existe.
 
 ## Verificación end-to-end contra el API
 

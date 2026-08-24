@@ -213,7 +213,9 @@ stateDiagram-v2
     Reimpresa --> Reimpresa: cada reimpresión exige motivo
 
     PreGenerada --> Rechazada: incumple R1..R3
-    Impresa --> Rechazada: Operario intenta reimprimir<br/>REPRINT_NOT_AUTHORIZED
+    Impresa --> Pendiente: rol sin autorización solicita reimprimir<br/>REPRINT_PENDING_APPROVAL
+    Pendiente --> Reimpresa: Supervisor/Admin autoriza<br/>y las reglas siguen cumpliéndose
+    Pendiente --> Rechazada: negada, o las reglas<br/>dejaron de cumplirse
     Rechazada --> PreGenerada: se corrige la causa
 
     note right of Rechazada

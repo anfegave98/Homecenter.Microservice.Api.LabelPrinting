@@ -82,10 +82,15 @@ builder.Services.AddSingleton<IPrintRule, ZoneAvailabilityRule>();
 builder.Services.AddSingleton<IPrintRule, ReprintPolicyRule>();
 builder.Services.AddSingleton(provider => new PrintRuleEngine(provider.GetServices<IPrintRule>()));
 
+// Lo comparten el envio de la solicitud y su autorizacion posterior: ambos necesitan
+// exactamente el mismo contexto, resuelto con los datos vigentes en cada momento.
+builder.Services.AddScoped<PrintContextBuilder>();
+
 builder.Services.AddScoped<IAuthenticateUserUseCase, AuthenticateUserUseCase>();
 builder.Services.AddScoped<IResolveLabelUseCase, ResolveLabelUseCase>();
 builder.Services.AddScoped<IProcessPrintRequestUseCase, ProcessPrintRequestUseCase>();
 builder.Services.AddScoped<IGetPrintHistoryUseCase, GetPrintHistoryUseCase>();
+builder.Services.AddScoped<IResolveReprintApprovalUseCase, ResolveReprintApprovalUseCase>();
 builder.Services.AddScoped<IGetDashboardUseCase, GetDashboardUseCase>();
 
 // ---------------------------------------------------------------------------

@@ -107,7 +107,7 @@ puede dar. Por eso viene apagada por defecto.
 | **H2** | `requetEtq.json` solo trae `lpn`, pero la sección 9 exige LPN + Zona + Usuario | `zone` se acepta como override opcional; si falta, se usa la del documento origen. El usuario sale del JWT |
 | **H3** | `responseEtq.json` usa otro vocabulario y expone **un solo SKU escalar**, pero una ETQ puede arrastrar varios productos | La respuesta trae el arreglo completo **más** un bloque `legacy` con la forma exacta del anexo, marcando `hasMultipleProducts: true` cuando hay más de uno |
 | **H4** | **No existe archivo de inventario**, pero la Regla 3 depende de él | Se crea `mocks/inventoryAvailability.json` (producto × zona → `availableQty`, `isStocked`) |
-| **H5** | El enunciado no define quién puede reimprimir | Se exige rol `Supervisor`/`Admin` y motivo obligatorio. Una etiqueta duplicada en piso es un problema operativo real |
+| **H5** | El enunciado no define quién puede reimprimir | Motivo obligatorio para todos. `Supervisor`/`Admin` reimprimen de inmediato; el resto deja la solicitud en `PENDING_APPROVAL` para que un autorizado la resuelva. Una etiqueta duplicada en piso es un problema operativo real, pero un bloqueo sin salida empuja al operario a usar la sesión de otro |
 | **H6** | El enunciado no define el código HTTP del rechazo de negocio | HTTP `200` con envelope `success: false`. Ver decisión 1 |
 
 Sobre **H3**: perder productos en silencio sería un error funcional. Documentar la

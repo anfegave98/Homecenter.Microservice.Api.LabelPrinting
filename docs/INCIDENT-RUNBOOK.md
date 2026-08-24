@@ -437,7 +437,8 @@ no descarta la intermitencia.
 | `INSUFFICIENT_INVENTORY` | 200 | Si es masivo, revisar sincronización | Cantidad insuficiente en la zona |
 | `NOT_STOCKED` | 200 | Si es masivo, revisar sincronización | Producto no abastecido en la zona |
 | `REPRINT_REASON_REQUIRED` | 200 | No | Falta el motivo de reimpresión |
-| `REPRINT_NOT_AUTHORIZED` | 200 | No | El rol no autoriza reimprimir |
+| `REPRINT_PENDING_APPROVAL` | 200 | No | Esperando decisión de un autorizador |
+| `REPRINT_REJECTED_BY_APPROVER` | 200 | No | Un autorizador negó la reimpresión |
 | `TOO_MANY_REQUESTS` | 429 | **Sí, si es generalizado** | Límite de tráfico superado |
 | `INTERNAL_ERROR` | 500 | **Sí** | Fallo no controlado — usar el `correlationId` |
 | `SERVICE_UNHEALTHY` | 503 | **Sí** | Un componente no responde |

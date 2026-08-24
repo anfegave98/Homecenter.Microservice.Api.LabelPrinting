@@ -1,6 +1,7 @@
 using Homecenter.Microservice.Api.LabelPrinting.Abstractions.UseCases;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Common;
 using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Printing;
+using Homecenter.Microservice.Api.LabelPrinting.Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Homecenter.Microservice.Api.LabelPrinting.Configuration;
 using Microsoft.AspNetCore.Mvc;
@@ -19,16 +20,20 @@ public sealed class PrintRequestsController : ControllerBase
 {
     private readonly IProcessPrintRequestUseCase _processPrintRequest;
     private readonly IGetPrintHistoryUseCase _getPrintHistory;
+    private readonly IResolveReprintApprovalUseCase _resolveReprintApproval;
 
     /// <summary>Crea el controlador con sus casos de uso.</summary>
     /// <param name="processPrintRequest">Caso de uso de procesamiento de impresion.</param>
     /// <param name="getPrintHistory">Caso de uso de consulta de historial.</param>
+    /// <param name="resolveReprintApproval">Caso de uso de autorizacion de reimpresiones.</param>
     public PrintRequestsController(
         IProcessPrintRequestUseCase processPrintRequest,
-        IGetPrintHistoryUseCase getPrintHistory)
+        IGetPrintHistoryUseCase getPrintHistory,
+        IResolveReprintApprovalUseCase resolveReprintApproval)
     {
         _processPrintRequest = processPrintRequest;
         _getPrintHistory = getPrintHistory;
+        _resolveReprintApproval = resolveReprintApproval;
     }
 
     /// <summary>
@@ -40,7 +45,8 @@ public sealed class PrintRequestsController : ControllerBase
     /// auditada, apruebe o rechace.
     ///
     /// Si la ETQ ya fue impresa antes, la solicitud se marca como reimpresion y exige
-    /// motivo y rol Supervisor o Admin.
+    /// motivo. Un Supervisor o Admin la ejecuta de inmediato; cualquier otro rol la deja
+    /// en estado PENDING_APPROVAL para que un autorizado la resuelva.
     /// </remarks>
     /// <param name="request">Solicitud con LPN, zona y motivo de reimpresion si aplica.</param>
     /// <param name="cancellationToken">Token de cancelacion.</param>
@@ -82,6 +88,81 @@ public sealed class PrintRequestsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _getPrintHistory.ExecuteAsync(filter, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Consulta las reimpresiones que esperan autorizacion.
+    /// </summary>
+    /// <remarks>
+    /// Es la bandeja de trabajo del Supervisor. Se ordena de la mas antigua a la mas
+    /// reciente: quien lleva mas tiempo esperando se atiende primero.
+    /// </remarks>
+    /// <param name="page">Pagina solicitada, base 1.</param>
+    /// <param name="pageSize">Registros por pagina.</param>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    /// <returns>Pagina de solicitudes pendientes.</returns>
+    [EnableRateLimiting(RateLimitingSetup.QueryPolicy)]
+    [HttpGet("pending")]
+    [Authorize(Roles = $"{RoleName.Supervisor},{RoleName.Admin}")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<PrintHistoryItemDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetPendingAsync(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _resolveReprintApproval.GetPendingAsync(page, pageSize, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Autoriza una reimpresion pendiente.
+    /// </summary>
+    /// <remarks>
+    /// La autorizacion no imprime a ciegas: las reglas se vuelven a evaluar con los datos
+    /// del momento de la decision. Si el documento se anulo o el inventario se agoto
+    /// mientras la solicitud esperaba, la respuesta es un rechazo con ese motivo y no
+    /// con el visto bueno.
+    /// </remarks>
+    /// <param name="id">Identificador de la solicitud pendiente.</param>
+    /// <param name="decision">Comentario del autorizador.</param>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    /// <returns>Resultado final de la solicitud.</returns>
+    [HttpPost("{id:int}/approve")]
+    [Authorize(Roles = $"{RoleName.Supervisor},{RoleName.Admin}")]
+    [ProducesResponseType(typeof(ApiResponse<PrintResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ApproveAsync(
+        int id,
+        [FromBody] ReprintDecisionDto decision,
+        CancellationToken cancellationToken)
+    {
+        var result = await _resolveReprintApproval.ApproveAsync(id, decision, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Niega una reimpresion pendiente.
+    /// </summary>
+    /// <remarks>
+    /// El motivo es obligatorio: sin el, el operario no sabe que corregir y soporte no
+    /// tiene rastro de por que se nego el duplicado.
+    /// </remarks>
+    /// <param name="id">Identificador de la solicitud pendiente.</param>
+    /// <param name="decision">Motivo del rechazo.</param>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    /// <returns>Resultado final de la solicitud.</returns>
+    [HttpPost("{id:int}/reject")]
+    [Authorize(Roles = $"{RoleName.Supervisor},{RoleName.Admin}")]
+    [ProducesResponseType(typeof(ApiResponse<PrintResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RejectAsync(
+        int id,
+        [FromBody] ReprintDecisionDto decision,
+        CancellationToken cancellationToken)
+    {
+        var result = await _resolveReprintApproval.RejectAsync(id, decision, cancellationToken);
         return Ok(result);
     }
 }

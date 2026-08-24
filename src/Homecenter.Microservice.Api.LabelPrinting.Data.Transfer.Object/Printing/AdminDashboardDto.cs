@@ -21,6 +21,14 @@ public sealed class AdminDashboardDto
     /// <summary>Eventos marcados como reimpresion.</summary>
     public required int Reprints { get; init; }
 
+    /// <summary>
+    /// Reimpresiones esperando decision de un Supervisor o Admin.
+    ///
+    /// Es el indicador que hay que mirar a diario: una cola que crece significa
+    /// operarios bloqueados esperando una autorizacion que nadie esta atendiendo.
+    /// </summary>
+    public required int PendingApproval { get; init; }
+
     /// <summary>Conteo de rechazos agrupado por codigo, de mayor a menor.</summary>
     public required IReadOnlyDictionary<string, int> RejectionsByCode { get; init; }
 }

@@ -49,10 +49,13 @@ public sealed class ReprintPolicyRuleTests
     }
 
     [Fact]
-    public void Rechaza_con_REPRINT_NOT_AUTHORIZED_cuando_el_rol_no_habilita()
+    public void Deriva_a_autorizacion_cuando_el_rol_no_habilita()
     {
         // CP-10. La politica vive en la regla de negocio, no en el controlador: asi se
         // aplica igual sin importar por que camino entre la solicitud.
+        //
+        // La solicitud no se cierra: el operario es quien detecta la etiqueta rota, y
+        // negarle el paso sin salida lo empuja a usar la sesion de otro.
         // Arrange
         var context = PrintScenarioBuilder.Valid()
             .AlreadyPrinted()
@@ -65,7 +68,8 @@ public sealed class ReprintPolicyRuleTests
 
         // Assert
         result.Passed.Should().BeFalse();
-        result.RejectionCode.Should().Be(RejectionCodes.ReprintNotAuthorized);
+        result.RequiresApproval.Should().BeTrue();
+        result.RejectionCode.Should().Be(RejectionCodes.ReprintPendingApproval);
     }
 
     [Theory]
@@ -92,10 +96,10 @@ public sealed class ReprintPolicyRuleTests
     }
 
     [Fact]
-    public void El_rol_se_evalua_antes_que_el_motivo()
+    public void El_motivo_se_exige_antes_de_derivar_a_autorizacion()
     {
-        // Pedirle el motivo a alguien que de todas formas no puede reimprimir lo lleva
-        // a reintentar para chocar con un segundo rechazo.
+        // Sin justificacion no hay nada que autorizar: derivar una solicitud vacia solo
+        // le traslada al supervisor el trabajo de averiguar para que se pidio.
         // Arrange
         var context = PrintScenarioBuilder.Valid()
             .AlreadyPrinted()
@@ -107,6 +111,7 @@ public sealed class ReprintPolicyRuleTests
         var result = _rule.Evaluate(context);
 
         // Assert
-        result.RejectionCode.Should().Be(RejectionCodes.ReprintNotAuthorized);
+        result.RejectionCode.Should().Be(RejectionCodes.ReprintReasonRequired);
+        result.RequiresApproval.Should().BeFalse();
     }
 }

@@ -21,9 +21,37 @@ public sealed class PrintRuleResult
     /// <summary>Detalle granular del incumplimiento, expuesto en error.details.</summary>
     public IReadOnlyCollection<object>? Details { get; init; }
 
+    /// <summary>
+    /// True cuando la regla no dejo pasar la solicitud pero tampoco la cierra: queda
+    /// esperando la decision de un tercero.
+    ///
+    /// Se modela sobre Passed=false y no como un desenlace independiente porque el
+    /// motor solo necesita saber si debe cortar; que hacer con el corte lo decide el
+    /// caso de uso.
+    /// </summary>
+    public bool RequiresApproval { get; init; }
+
     /// <inheritdoc />
     public static PrintRuleResult Pass(string ruleCode, string? detail = null) =>
         new() { RuleCode = ruleCode, Passed = true, Message = detail };
+
+    /// <summary>
+    /// La regla no deja imprimir ahora, pero deriva la solicitud a autorizacion en
+    /// lugar de cerrarla.
+    /// </summary>
+    /// <param name="ruleCode">Regla que derivo la solicitud.</param>
+    /// <param name="rejectionCode">Codigo del contrato publico que explica la derivacion.</param>
+    /// <param name="message">Detalle legible para el usuario.</param>
+    /// <returns>Veredicto en espera de autorizacion.</returns>
+    public static PrintRuleResult Defer(string ruleCode, string rejectionCode, string message) =>
+        new()
+        {
+            RuleCode = ruleCode,
+            Passed = false,
+            RequiresApproval = true,
+            RejectionCode = rejectionCode,
+            Message = message
+        };
 
     /// <inheritdoc />
     public static PrintRuleResult Fail(

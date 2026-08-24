@@ -21,6 +21,7 @@ public sealed class PrintRequestConfiguration : IEntityTypeConfiguration<PrintRe
         builder.Property(x => x.RejectionCode).HasMaxLength(50);
         builder.Property(x => x.RejectionMessage).HasMaxLength(500);
         builder.Property(x => x.ReprintReason).HasMaxLength(300);
+        builder.Property(x => x.ApprovalNote).HasMaxLength(300);
 
         builder.HasOne(x => x.Zone)
                .WithMany()
@@ -32,10 +33,20 @@ public sealed class PrintRequestConfiguration : IEntityTypeConfiguration<PrintRe
                .HasForeignKey(x => x.IdUser)
                .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.Approver)
+               .WithMany()
+               .HasForeignKey(x => x.IdApprover)
+               .OnDelete(DeleteBehavior.Restrict);
+
         // Indice que sostiene las dos consultas calientes: deteccion de reimpresion
         // por LPN e historial ordenado por fecha.
         builder.HasIndex(x => new { x.LpnId, x.ProcessedAt });
         builder.HasIndex(x => x.CorrelationId);
+
+        // La bandeja de pendientes se consulta cada vez que un supervisor abre la
+        // pantalla, y son pocas filas dentro de un historial que crece sin techo:
+        // sin este indice la consulta termina recorriendo toda la tabla.
+        builder.HasIndex(x => new { x.Result, x.ProcessedAt });
     }
 }
 

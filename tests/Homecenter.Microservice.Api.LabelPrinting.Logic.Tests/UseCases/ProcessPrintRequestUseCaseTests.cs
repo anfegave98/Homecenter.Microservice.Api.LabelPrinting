@@ -4,6 +4,7 @@ using Homecenter.Microservice.Api.LabelPrinting.Data.Transfer.Object.Printing;
 using Homecenter.Microservice.Api.LabelPrinting.Entities;
 using Homecenter.Microservice.Api.LabelPrinting.Entities.Enums;
 using Homecenter.Microservice.Api.LabelPrinting.Logic.Rules;
+using Homecenter.Microservice.Api.LabelPrinting.Logic.Services;
 using Homecenter.Microservice.Api.LabelPrinting.Logic.Tests.TestSupport;
 using Homecenter.Microservice.Api.LabelPrinting.Logic.UseCases;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -186,9 +187,9 @@ public sealed class ProcessPrintRequestUseCaseTests
     }
 
     [Fact]
-    public async Task Rechaza_la_reimpresion_solicitada_por_un_operario()
+    public async Task Deja_pendiente_la_reimpresion_solicitada_por_un_operario()
     {
-        // CP-10.
+        // CP-10. No se imprime, pero tampoco se cierra: queda esperando decision.
         // Arrange
         var fixture = BuildFixture(hasPreviousPrint: true);
 
@@ -201,8 +202,34 @@ public sealed class ProcessPrintRequestUseCaseTests
         });
 
         // Assert
-        response.Error!.Code.Should().Be(RejectionCodes.ReprintNotAuthorized);
+        response.Error!.Code.Should().Be(RejectionCodes.ReprintPendingApproval);
+        response.Data!.Result.Should().Be("PENDING_APPROVAL");
         _printer.Invocations.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Audita_como_pendiente_la_reimpresion_derivada_a_autorizacion()
+    {
+        // El motivo debe quedar guardado desde el primer momento: es lo unico que el
+        // supervisor tendra para decidir cuando abra la bandeja mas tarde.
+        // Arrange
+        var fixture = BuildFixture(hasPreviousPrint: true);
+
+        // Act
+        await fixture.UseCase.ExecuteAsync(new PrintRequestCreateDto
+        {
+            Lpn = "LPN-000987654",
+            ZoneCode = ZoneCode,
+            ReprintReason = "Se perdio la etiqueta"
+        });
+
+        // Assert
+        var saved = fixture.Audit.Saved.Should().ContainSingle().Subject;
+        saved.Result.Should().Be(PrintResult.PendingApproval);
+        saved.EventType.Should().Be(PrintEventType.Reprint);
+        saved.ReprintReason.Should().Be("Se perdio la etiqueta");
+        saved.IdApprover.Should().BeNull();
+        saved.DecidedAt.Should().BeNull();
     }
 
     [Fact]
@@ -404,13 +431,20 @@ public sealed class ProcessPrintRequestUseCaseTests
             new ReprintPolicyRule()
         });
 
-        var useCase = new ProcessPrintRequestUseCase(
+        var currentUser = new StubCurrentUserAccessor(userId, userName, roles ?? new[] { RoleName.Operario });
+
+        var contextBuilder = new PrintContextBuilder(
             new InMemoryLabelRepository(label),
             new InMemoryZoneRepository(zone),
             new InMemoryInventoryRepository(inventory),
             audit,
-            new StubCurrentUserAccessor(userId, userName, roles ?? new[] { RoleName.Operario }),
+            currentUser);
+
+        var useCase = new ProcessPrintRequestUseCase(
+            audit,
+            currentUser,
             _printer,
+            contextBuilder,
             engine,
             NullLogger<ProcessPrintRequestUseCase>.Instance);
 
