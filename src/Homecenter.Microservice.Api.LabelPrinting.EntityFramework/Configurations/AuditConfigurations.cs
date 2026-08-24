@@ -38,6 +38,11 @@ public sealed class PrintRequestConfiguration : IEntityTypeConfiguration<PrintRe
                .HasForeignKey(x => x.IdApprover)
                .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.DownloadedBy)
+               .WithMany()
+               .HasForeignKey(x => x.IdDownloadedBy)
+               .OnDelete(DeleteBehavior.Restrict);
+
         // Indice que sostiene las dos consultas calientes: deteccion de reimpresion
         // por LPN e historial ordenado por fecha.
         builder.HasIndex(x => new { x.LpnId, x.ProcessedAt });

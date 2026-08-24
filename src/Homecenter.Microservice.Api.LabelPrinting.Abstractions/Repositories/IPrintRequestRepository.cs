@@ -60,6 +60,21 @@ public interface IPrintRequestRepository
     /// </returns>
     Task<PrintRequest?> GetPendingByIdAsync(int id, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Recupera una solicitud aprobada para entregar su etiqueta.
+    /// </summary>
+    /// <param name="id">Identificador de la solicitud en la auditoria.</param>
+    /// <param name="restrictToUserId">
+    /// Cuando tiene valor, la solicitud debe pertenecer a ese usuario. Lo impone el caso
+    /// de uso segun el rol: un operario no descarga la etiqueta de otro.
+    /// </param>
+    /// <param name="cancellationToken">Token de cancelacion.</param>
+    /// <returns>La solicitud aprobada, o null si no existe o no le corresponde.</returns>
+    Task<PrintRequest?> GetApprovedForDownloadAsync(
+        int id,
+        int? restrictToUserId,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Persiste la decision tomada sobre una solicitud pendiente.</summary>
     /// <param name="request">Solicitud con su desenlace y autorizador ya asignados.</param>
     /// <param name="cancellationToken">Token de cancelacion.</param>

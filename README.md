@@ -110,6 +110,17 @@ primera violación**, conservando la traza de lo evaluado hasta el corte.
 | **R3** `ZoneAvailabilityRule` | Algún producto sin cantidad suficiente o no abastecido | `INSUFFICIENT_INVENTORY` · `NOT_STOCKED` |
 | **R4** `ReprintPolicyRule` | Reimpresión sin motivo; **deriva** a autorización si el rol no la ejecuta | `REPRINT_REASON_REQUIRED` · `REPRINT_PENDING_APPROVAL` |
 
+La impresión se simula en dos tiempos. Al procesar la solicitud se confirma el evento
+lógico y se audita; el archivo llega a manos del operario cuando descarga la etiqueta
+desde `GET api/print-requests/{id}/label`. El enunciado admite ambas formas de simular
+—confirmación lógica o archivo de salida— y aquí cumplen papeles distintos: la primera
+es la decisión de negocio, la segunda es el entregable.
+
+Una solicitud aprobada da derecho a **una** descarga, registrada con fecha y usuario.
+Permitir bajarla indefinidamente convertiría el control de reimpresiones en un trámite
+decorativo: cualquiera obtendría copias sin motivo ni autorización, que es justo lo que
+la Regla 4 existe para impedir.
+
 R3 no da un rechazo genérico: `error.details` trae **qué producto** falló, cuánto se
 pidió, cuánto hay y por qué.
 
@@ -137,6 +148,7 @@ visto bueno. Un permiso no puede volver válida una impresión que dejó de serl
 | GET | `api/print-requests/pending` | `Supervisor` · `Admin` | 60/min |
 | POST | `api/print-requests/{id}/approve` | `Supervisor` · `Admin` | 30/min |
 | POST | `api/print-requests/{id}/reject` | `Supervisor` · `Admin` | 30/min |
+| GET | `api/print-requests/{id}/label` | Autenticado *(operario: solo lo suyo)* | 60/min |
 | GET | `api/print-requests/history` | Autenticado *(operario: solo lo suyo)* | 60/min |
 | GET | `api/admin/dashboard` | Admin | 60/min |
 | GET | `api/health` | Público | sin límite |

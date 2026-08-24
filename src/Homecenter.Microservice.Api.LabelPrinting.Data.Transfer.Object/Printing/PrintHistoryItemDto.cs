@@ -53,4 +53,12 @@ public sealed class PrintHistoryItemDto
 
     /// <summary>Comentario del autorizador al aprobar o negar.</summary>
     public string? ApprovalNote { get; init; }
+
+    /// <summary>
+    /// Momento en que se descargo la etiqueta. Null si sigue disponible.
+    ///
+    /// El cliente lo usa para saber si ofrecer la descarga: una solicitud aprobada da
+    /// derecho a una sola.
+    /// </summary>
+    public DateTimeOffset? DownloadedAt { get; init; }
 }

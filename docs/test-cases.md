@@ -44,6 +44,9 @@ organizadas en tres niveles:
 | CP-17 | Supervisor niega la reimpresión | R4A | `ResolveReprintApprovalUseCaseTests.Niega_la_solicitud...` | `REPRINT_REJECTED_BY_APPROVER`, motivo auditado |
 | CP-18 | Se intenta negar sin motivo | R4A | `ResolveReprintApprovalUseCaseTests.Exige_motivo_para_negar` (Theory) | `APPROVAL_NOTE_REQUIRED`, la solicitud no se toca |
 | CP-19 | Dos autorizadores sobre la misma solicitud | R4A | `ResolveReprintApprovalUseCaseTests.Responde_sin_encontrar_nada...` | `PENDING_REQUEST_NOT_FOUND` para el segundo |
+| CP-20 | Descarga de la etiqueta de una solicitud aprobada | R5 | `DownloadLabelUseCaseTests.Entrega_el_zpl...` | Archivo `.zpl`, descarga registrada |
+| CP-21 | Segunda descarga de la misma solicitud | R5 | `DownloadLabelUseCaseTests.Niega_la_segunda_descarga...` | `LABEL_ALREADY_DOWNLOADED` |
+| CP-22 | Operario intenta descargar la etiqueta de otro | Autorización | `DownloadLabelUseCaseTests.Un_operario_no_descarga_la_etiqueta_de_otro` | `LABEL_NOT_AVAILABLE`, restricción impuesta en el query |
 
 CP-13 se verifica contra el servicio corriendo y no con una prueba unitaria: lo que
 hay que validar es la tubería HTTP completa, que es donde vive el limitador.
@@ -66,6 +69,8 @@ Se agregaron porque cubren decisiones de diseño que una matriz por regla no alc
 | Usuario auditado tomado del token | Si viniera del body, la auditoría dejaría de ser un control |
 | Solicitante y autorizador registrados por separado | Confundirlos impediría responder quién aprobó el duplicado |
 | Traza de la segunda evaluación anexada sin borrar la primera | Se validó al pedir y se validó al autorizar: son dos momentos y pueden diferir |
+| Un solo motivo para "no existe", "no aprobada" y "es de otro" | Distinguirlos le confirmaría a un operario que la solicitud existe y es de alguien más |
+| No se marca como descargada una etiqueta que no se entregó | Dejaría una solicitud sin archivo y sin derecho a pedirlo otra vez |
 | Solicitud sin zona (contrato del anexo) | `requetEtq.json` solo trae el LPN: omitirla debe seguir funcionando |
 | Bloque `legacy` con `hasMultipleProducts` | El consumidor del anexo no se rompe, pero tampoco se le oculta la degradación |
 | Dos cifrados del mismo texto difieren | Es la prueba que justifica el IV aleatorio: con IV fijo serían idénticos |
@@ -84,6 +89,7 @@ mutantes fueron detectados y el código se restauró después:
 | `Operario` agregado a los roles autorizados a reimprimir | 3 |
 | Historial sin restricción por usuario (`restrictToUserId = null` siempre) | 2 |
 | Autorización sin revalidar reglas (se aprueba lo que el supervisor firme) | 2 (documento anulado e inventario agotado) |
+| Descarga sin control de unicidad (se puede bajar la etiqueta N veces) | 1 |
 
 El tercero es el más relevante: es la fuga de datos entre operarios, y una prueba que
 no la detecte no está protegiendo nada. El cuarto protege la otra mitad del control:

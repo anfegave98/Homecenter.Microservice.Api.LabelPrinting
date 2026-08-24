@@ -43,6 +43,12 @@ public static class RejectionCodes
 
     /// <summary>Negar una reimpresion pendiente exige dejar el motivo por escrito.</summary>
     public const string ApprovalNoteRequired = "APPROVAL_NOTE_REQUIRED";
+
+    /// <summary>La solicitud no existe, no fue aprobada o pertenece a otro usuario.</summary>
+    public const string LabelNotAvailable = "LABEL_NOT_AVAILABLE";
+
+    /// <summary>La etiqueta de esa solicitud ya se descargo una vez.</summary>
+    public const string LabelAlreadyDownloaded = "LABEL_ALREADY_DOWNLOADED";
 }
 
 /// <summary>

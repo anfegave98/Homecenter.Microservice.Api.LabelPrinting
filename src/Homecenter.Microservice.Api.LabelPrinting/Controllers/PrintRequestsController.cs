@@ -21,19 +21,23 @@ public sealed class PrintRequestsController : ControllerBase
     private readonly IProcessPrintRequestUseCase _processPrintRequest;
     private readonly IGetPrintHistoryUseCase _getPrintHistory;
     private readonly IResolveReprintApprovalUseCase _resolveReprintApproval;
+    private readonly IDownloadLabelUseCase _downloadLabel;
 
     /// <summary>Crea el controlador con sus casos de uso.</summary>
     /// <param name="processPrintRequest">Caso de uso de procesamiento de impresion.</param>
     /// <param name="getPrintHistory">Caso de uso de consulta de historial.</param>
     /// <param name="resolveReprintApproval">Caso de uso de autorizacion de reimpresiones.</param>
+    /// <param name="downloadLabel">Caso de uso de entrega de la etiqueta.</param>
     public PrintRequestsController(
         IProcessPrintRequestUseCase processPrintRequest,
         IGetPrintHistoryUseCase getPrintHistory,
-        IResolveReprintApprovalUseCase resolveReprintApproval)
+        IResolveReprintApprovalUseCase resolveReprintApproval,
+        IDownloadLabelUseCase downloadLabel)
     {
         _processPrintRequest = processPrintRequest;
         _getPrintHistory = getPrintHistory;
         _resolveReprintApproval = resolveReprintApproval;
+        _downloadLabel = downloadLabel;
     }
 
     /// <summary>
@@ -164,5 +168,43 @@ public sealed class PrintRequestsController : ControllerBase
     {
         var result = await _resolveReprintApproval.RejectAsync(id, decision, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Descarga la etiqueta de una solicitud aprobada.
+    /// </summary>
+    /// <remarks>
+    /// Es la materialización de la impresión simulada: la confirmación lógica ya ocurrió
+    /// al procesar la solicitud, y esto entrega el archivo ZPL.
+    ///
+    /// Una solicitud aprobada da derecho a **una** descarga. Volver a necesitar la
+    /// etiqueta es una reimpresión, con su motivo y su autorización.
+    ///
+    /// Cuando procede, la respuesta es el archivo y no el envelope. Cuando no procede sí
+    /// se responde el envelope, porque ahí hay un motivo que comunicar.
+    /// </remarks>
+    /// <param name="id">Identificador de la solicitud aprobada.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>El archivo .zpl, o el motivo por el cual no se entrega.</returns>
+    [EnableRateLimiting(RateLimitingSetup.QueryPolicy)]
+    [HttpGet("{id:int}/label")]
+    [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<LabelDownloadDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> DownloadLabelAsync(int id, CancellationToken cancellationToken)
+    {
+        var result = await _downloadLabel.ExecuteAsync(id, cancellationToken);
+
+        if (!result.Success)
+        {
+            return Ok(result);
+        }
+
+        var label = result.Data!;
+
+        return File(
+            System.Text.Encoding.UTF8.GetBytes(label.Content),
+            "application/vnd.zebra.zpl",
+            label.FileName);
     }
 }

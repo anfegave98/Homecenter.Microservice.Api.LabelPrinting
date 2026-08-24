@@ -138,6 +138,27 @@ public sealed class InMemoryPrintRequestRepository : IPrintRequestRepository
     public Task<PrintRequest?> GetPendingByIdAsync(int id, CancellationToken cancellationToken = default) =>
         Task.FromResult(Pending.FirstOrDefault(x => x.Id == id));
 
+    /// <summary>Solicitudes aprobadas que el doble expone para descargar.</summary>
+    public List<PrintRequest> Approved { get; } = new();
+
+    /// <summary>Restriccion por usuario con la que se pidio la descarga.</summary>
+    public int? LastDownloadRestriction { get; private set; }
+
+    public Task<PrintRequest?> GetApprovedForDownloadAsync(
+        int id,
+        int? restrictToUserId,
+        CancellationToken cancellationToken = default)
+    {
+        LastDownloadRestriction = restrictToUserId;
+
+        // Se replica la restriccion del repositorio real: si no le corresponde, para el
+        // caso de uso es indistinguible de que no exista.
+        var match = Approved.FirstOrDefault(
+            x => x.Id == id && (!restrictToUserId.HasValue || x.IdUser == restrictToUserId.Value));
+
+        return Task.FromResult(match);
+    }
+
     public Task UpdateAsync(PrintRequest request, CancellationToken cancellationToken = default)
     {
         Updated.Add(request);

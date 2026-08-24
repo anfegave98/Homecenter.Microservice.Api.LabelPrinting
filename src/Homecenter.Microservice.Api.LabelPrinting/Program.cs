@@ -91,6 +91,7 @@ builder.Services.AddScoped<IResolveLabelUseCase, ResolveLabelUseCase>();
 builder.Services.AddScoped<IProcessPrintRequestUseCase, ProcessPrintRequestUseCase>();
 builder.Services.AddScoped<IGetPrintHistoryUseCase, GetPrintHistoryUseCase>();
 builder.Services.AddScoped<IResolveReprintApprovalUseCase, ResolveReprintApprovalUseCase>();
+builder.Services.AddScoped<IDownloadLabelUseCase, DownloadLabelUseCase>();
 builder.Services.AddScoped<IGetDashboardUseCase, GetDashboardUseCase>();
 
 // ---------------------------------------------------------------------------

@@ -59,6 +59,18 @@ public class PrintRequest : EntityBase
     /// <summary>Justificacion que dejo quien aprobo o nego la reimpresion.</summary>
     public string? ApprovalNote { get; set; }
 
+    /// <summary>
+    /// Momento en que la etiqueta se descargo, en UTC. Null mientras nadie la baje.
+    ///
+    /// Una solicitud aprobada entrega derecho a UNA descarga: la etiqueta fisica sale
+    /// una sola vez. Volver a necesitarla es una reimpresion, con su motivo y su
+    /// autorizacion, no un segundo clic al mismo boton.
+    /// </summary>
+    public DateTimeOffset? DownloadedAt { get; set; }
+
+    /// <summary>Usuario que descargo la etiqueta.</summary>
+    public int? IdDownloadedBy { get; set; }
+
     /// <summary>Fecha y hora de procesamiento, en UTC.</summary>
     public DateTimeOffset ProcessedAt { get; set; } = DateTimeOffset.UtcNow;
 
@@ -70,6 +82,9 @@ public class PrintRequest : EntityBase
 
     /// <summary>Usuario que resolvio la solicitud pendiente.</summary>
     public User? Approver { get; set; }
+
+    /// <summary>Usuario que descargo la etiqueta.</summary>
+    public User? DownloadedBy { get; set; }
 
     /// <summary>Traza de las reglas evaluadas durante el procesamiento.</summary>
     public ICollection<PrintAuditLog> AuditLogs { get; set; } = new List<PrintAuditLog>();

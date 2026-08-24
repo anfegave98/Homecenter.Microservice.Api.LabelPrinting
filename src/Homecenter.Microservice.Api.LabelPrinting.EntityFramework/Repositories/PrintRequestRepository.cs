@@ -49,6 +49,27 @@ public sealed class PrintRequestRepository : IPrintRequestRepository
                     cancellationToken);
 
     /// <inheritdoc />
+    public Task<PrintRequest?> GetApprovedForDownloadAsync(
+        int id,
+        int? restrictToUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.PrintRequests
+                            .Include(x => x.User)
+                            .Where(x => x.Id == id && x.Result == PrintResult.Approved);
+
+        // La restriccion viaja al query y no se comprueba despues de traer la fila: asi
+        // no existe el camino en el que alguien lea la solicitud de otro aunque luego se
+        // le niegue el archivo.
+        if (restrictToUserId.HasValue)
+        {
+            query = query.Where(x => x.IdUser == restrictToUserId.Value);
+        }
+
+        return query.FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task UpdateAsync(PrintRequest request, CancellationToken cancellationToken = default)
     {
         _context.PrintRequests.Update(request);
@@ -199,7 +220,8 @@ public sealed class PrintRequestRepository : IPrintRequestRepository
             ProcessedAt = x.ProcessedAt,
             ApprovedBy = x.Approver != null ? x.Approver.UserName : null,
             DecidedAt = x.DecidedAt,
-            ApprovalNote = x.ApprovalNote
+            ApprovalNote = x.ApprovalNote,
+            DownloadedAt = x.DownloadedAt
         };
 
     /// <inheritdoc />
