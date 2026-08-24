@@ -102,6 +102,10 @@ Dos casos que parecen errores y no lo son:
 
 Para `LPN_NOT_FOUND` sirve cualquier cadena inventada.
 
+> `mocks/orders.json` es la fuente que lee el seeder. `mocks/labels.json` es la vista
+> plana de las mismas etiquetas, versionada como archivo mock de entrada según el
+> enunciado; **debe mantenerse en sincronía**, pero no es lo que se carga.
+
 ---
 
 ## Reglas de negocio
