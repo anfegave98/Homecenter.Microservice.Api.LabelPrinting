@@ -76,7 +76,7 @@ docker build -t homecenter-labelprinting-api .
 
 ## Datos de prueba
 
-Seis LPN, cada uno construido para un caso de prueba distinto:
+Cada LPN está construido para un caso de prueba distinto:
 
 | LPN | Zona | Documento | Qué demuestra |
 |---|---|---|---|
@@ -86,6 +86,13 @@ Seis LPN, cada uno construido para un caso de prueba distinto:
 | `LPN-000987657` | ZONA-PICKING-B | LIBERADA | `INSUFFICIENT_INVENTORY` — pide 5, hay 1 |
 | `LPN-000987658` | ZONA-DESPACHO | LIBERADA | `NOT_STOCKED` — hay 50 unidades pero `isStocked: false` |
 | `LPN-000987659` | ZONA-PICKING-A | **CREADA** | Éxito en el **límite exacto**: pide 4, hay 4 |
+| `LPN-000987660` … `LPN-000987677` | ZONA-PICKING-A | LIBERADA | Repuesto de casos de **éxito** (2 productos) |
+| `LPN-000987678` … `LPN-000987680` | ZONA-PICKING-A | **CREADA** | Repuesto del caso **límite exacto** |
+
+Los rechazos son repetibles: una solicitud rechazada no consume la etiqueta. Los casos de
+éxito **sí** se consumen —una vez impresa, la siguiente solicitud sobre ese LPN es una
+reimpresión— y por eso hay repuesto: quien evalúa necesita poder ver el camino feliz aunque
+otra persona ya lo haya recorrido.
 
 Dos casos que parecen errores y no lo son:
 
