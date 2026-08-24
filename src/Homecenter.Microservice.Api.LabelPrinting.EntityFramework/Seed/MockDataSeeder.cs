@@ -211,7 +211,12 @@ public sealed class MockDataSeeder
 
         foreach (var order in orders)
         {
+            // Se traen zona y productos porque el ZPL de cada etiqueta se compone con
+            // ellos: sin esto el compositor no tendria que escribir en la etiqueta.
             var document = await _context.Documents
+                .Include(x => x.Zone)
+                .Include(x => x.DocumentProducts)
+                    .ThenInclude(x => x.Product)
                 .FirstOrDefaultAsync(x => x.DocumentNumber == order.Document.DocumentNumber, cancellationToken);
 
             if (document is null)
@@ -286,15 +291,43 @@ public sealed class MockDataSeeder
         return document;
     }
 
-    /// <summary>Agrega unicamente las etiquetas del documento que aun no existen.</summary>
+    /// <summary>
+    /// Agrega las etiquetas que aun no existen y actualiza el ZPL de las que si.
+    ///
+    /// El ZPL se compone a partir del documento en lugar de copiarse del archivo semilla:
+    /// el anexo trae el ejemplo generico de Zebra, que no menciona la ETQ ni sus productos.
+    /// Ver <see cref="MockZplComposer"/>.
+    /// </summary>
     private async Task SeedLabelsAsync(Document document, OrderSeed order, CancellationToken cancellationToken)
     {
+        var productos = document.DocumentProducts.Where(x => x.State).ToArray();
+
         var agregadas = 0;
+        var actualizadas = 0;
 
         foreach (var label in order.Labels)
         {
-            if (await _context.Labels.AnyAsync(x => x.LpnId == label.LpnId, cancellationToken))
+            var zpl = MockZplComposer.Compose(
+                label.EtqId,
+                label.LpnId,
+                label.TemplateCode,
+                document,
+                productos);
+
+            var existente = await _context.Labels
+                .FirstOrDefaultAsync(x => x.LpnId == label.LpnId, cancellationToken);
+
+            if (existente is not null)
             {
+                // Se reescribe solo si cambio. En un ambiente ya desplegado las etiquetas
+                // conservan el ZPL del anexo, y sin esta actualizacion la vista previa
+                // seguiria mostrando la guia de envio generica para siempre.
+                if (existente.Zpl != zpl)
+                {
+                    existente.Zpl = zpl;
+                    actualizadas++;
+                }
+
                 continue;
             }
 
@@ -305,22 +338,23 @@ public sealed class MockDataSeeder
                 LpnId = label.LpnId,
                 IsPreGenerated = label.IsPreGenerated,
                 TemplateCode = label.TemplateCode,
-                Zpl = label.Zpl
+                Zpl = zpl
             });
 
             agregadas++;
         }
 
-        if (agregadas == 0)
+        if (agregadas == 0 && actualizadas == 0)
         {
             return;
         }
 
         await _context.SaveChangesAsync(cancellationToken);
         _logger.LogInformation(
-            "Se agregaron {Cantidad} etiqueta(s) al documento {Document}.",
+            "Documento {Document}: {Agregadas} etiqueta(s) agregada(s), {Actualizadas} con ZPL actualizado.",
+            document.DocumentNumber,
             agregadas,
-            document.DocumentNumber);
+            actualizadas);
     }
 
     private async Task SeedInventoryAsync(string mocksPath, CancellationToken cancellationToken)
@@ -365,7 +399,9 @@ public sealed class MockDataSeeder
 
     private sealed record DocumentSeed(string DocumentType, string DocumentNumber, string Status);
 
-    private sealed record LabelSeed(string EtqId, string LpnId, bool IsPreGenerated, string TemplateCode, string Zpl);
+    // Sin ZPL: lo compone MockZplComposer a partir del documento. El archivo semilla
+    // declara que etiquetas existen, no como se ven.
+    private sealed record LabelSeed(string EtqId, string LpnId, bool IsPreGenerated, string TemplateCode);
 
     private sealed record ProductLineSeed(string ProductCode, string ProductDescription, decimal RequestedQty, string Uom);
 

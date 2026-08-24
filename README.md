@@ -284,9 +284,32 @@ descartó, y cada ambigüedad quedó documentada como decisión:
 | H5 | No se define quién puede reimprimir | Motivo obligatorio para todos; el rol `Supervisor`/`Admin` reimprime directo, el resto envía la solicitud a autorización |
 | H6 | No se define el HTTP del rechazo de negocio | `200` con `success: false` |
 
-El ZPL de los anexos **se usa sin modificar**, incluido su contenido genérico de Zebra:
-la generación de la etiqueta está fuera de alcance y sustituirlo habría oscurecido que
-proviene literalmente del anexo entregado.
+### Sobre el ZPL de la semilla
+
+El anexo trae como ZPL el ejemplo genérico de Zebra: una guía de envío para *John Doe*
+en *Intershipping, Inc.*, con código de barras `12345678`. No menciona la ETQ, el LPN ni
+los productos.
+
+Eso bastaba mientras el ZPL se devolvía como texto opaco. Al renderizarlo como imagen
+descargable deja de servir: el evaluador abriría el `.png` y vería una etiqueta sin
+relación con la operación, lo que parece un defecto más que una demostración. Y generar
+la imagen por separado con los datos reales sería peor, porque el `.zpl` y el `.png` de
+la misma descarga contarían historias distintas.
+
+Por eso el ZPL de cada ETQ **se compone en la semilla** a partir de su documento
+(`MockZplComposer`), con ETQ, LPN en código de barras, documento origen, zona y
+productos. Esto **no** es la generación de etiquetas que el enunciado deja fuera de
+alcance: es la simulación del proceso de olas que las pre-genera, y vive en la capa de
+datos mock, no en la lógica de negocio. **El ZPL original del anexo se conserva íntegro**
+en `mocks/_anexo_tableOrders.original.json`.
+
+El `.zpl` lleva además un bloque de metadatos como comentario `^FX` —un campo legal que
+la impresora ignora— con los datos de la etiqueta. La vista previa `.png` se dibuja con
+ese bloque, así que imagen y archivo salen de la misma fuente y no pueden divergir.
+
+> El código de barras del `.png` es una representación: **no es Code 128 legible con
+> pistola**. La lectura real la da el `.zpl`, que sí lleva el `^BC` que la impresora
+> interpreta.
 
 ---
 

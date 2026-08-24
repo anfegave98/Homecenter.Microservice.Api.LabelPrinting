@@ -47,6 +47,7 @@ organizadas en tres niveles:
 | CP-20 | Descarga de la etiqueta de una solicitud aprobada | R5 | `DownloadLabelUseCaseTests.Entrega_el_zpl...` | Archivo `.zpl`, descarga registrada |
 | CP-21 | Segunda descarga de la misma solicitud | R5 | `DownloadLabelUseCaseTests.Niega_la_segunda_descarga...` | `LABEL_ALREADY_DOWNLOADED` |
 | CP-22 | Operario intenta descargar la etiqueta de otro | Autorización | `DownloadLabelUseCaseTests.Un_operario_no_descarga_la_etiqueta_de_otro` | `LABEL_NOT_AVAILABLE`, restricción impuesta en el query |
+| CP-23 | Composición del ZPL de la semilla | Datos mock | `MockZplComposerTests` (6 casos) | Formato válido, datos de la operación, LPN en `^BC`, metadatos legibles |
 
 CP-13 se verifica contra el servicio corriendo y no con una prueba unitaria: lo que
 hay que validar es la tubería HTTP completa, que es donde vive el limitador.
@@ -71,6 +72,8 @@ Se agregaron porque cubren decisiones de diseño que una matriz por regla no alc
 | Traza de la segunda evaluación anexada sin borrar la primera | Se validó al pedir y se validó al autorizar: son dos momentos y pueden diferir |
 | Un solo motivo para "no existe", "no aprobada" y "es de otro" | Distinguirlos le confirmaría a un operario que la solicitud existe y es de alguien más |
 | No se marca como descargada una etiqueta que no se entregó | Dejaría una solicitud sin archivo y sin derecho a pedirlo otra vez |
+| Caracteres de control neutralizados en el ZPL | Un `^` en una descripción cortaría el comando y la etiqueta saldría corrida, sin lanzar error |
+| ETQ sin productos compone un ZPL válido | El formato no debe romperse por un caso borde de datos |
 | Solicitud sin zona (contrato del anexo) | `requetEtq.json` solo trae el LPN: omitirla debe seguir funcionando |
 | Bloque `legacy` con `hasMultipleProducts` | El consumidor del anexo no se rompe, pero tampoco se le oculta la degradación |
 | Dos cifrados del mismo texto difieren | Es la prueba que justifica el IV aleatorio: con IV fijo serían idénticos |
